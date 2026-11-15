@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 304 480" width="304" height="480"><svg x="40.00" y="40.00" width="224.18" height="400.00" viewBox="3 12 102 182">
+<defs><mask id="fms" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="200">
+<path d="M38 112 V30 A10.5 10.5 0 0 1 59 30 V44" fill="none" stroke="#fff" stroke-width="13.5" stroke-linecap="round"/>
+<path d="M59 70 V83.42017411091987 Q59 96.42 47.03 101.50 L16.00 115.94 A9.75 9.75 0 0 0 23.62 133.89 L84.38 108.11 A9.75 9.75 0 0 1 92.00 126.06 L49.97 143.90 Q38 148.98 38 161.98 V176 A10.5 10.5 0 0 0 59 176 V166" fill="none" stroke="#000" stroke-width="25.5" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M59 40 V83.42017411091987 Q59 96.42 47.03 101.50 L16.00 115.94 A9.75 9.75 0 0 0 23.62 133.89 L84.38 108.11 A9.75 9.75 0 0 1 92.00 126.06 L49.97 143.90 Q38 148.98 38 161.98 V176 A10.5 10.5 0 0 0 59 176 V166" fill="none" stroke="#fff" stroke-width="13.5" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M59 151 L65.5 160 L63 167 L55 167 L52.5 160 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+</mask></defs>
+<rect width="120" height="200" fill="#0A0A0A" mask="url(#fms)"/></svg></svg>

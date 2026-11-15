@@ -1,0 +1,11 @@
+{
+  "note": "Centerline of the Black Saint serpent cross, in the master logo's coordinate space. One continuous path from tail (top-left leg) to head (bottom right). Use it to drive the intro: sample points along `centerline`, prepend an off-screen approach path, and slide a tube along it.",
+  "viewBox": [3, 12, 102, 182],
+  "strokeWidth": 12,
+  "gapBetweenStrands": 5,
+  "centerline": "M38 100 V30 A10.5 10.5 0 0 1 59 30 V86.136 Q59 99.14 47.03 104.22 L16.98 118.25 A8.5 8.5 0 0 0 23.62 133.89 L84.38 108.11 A8.5 8.5 0 0 1 91.02 123.75 L49.97 141.18 Q38 146.26 38 159.26 V176 A10.5 10.5 0 0 0 59 176 V166",
+  "head": "M59 151 L65.5 160 L63 167 L55 167 L52.5 160 Z",
+  "headDirection": "up (toward -y), at the end of the centerline",
+  "crossbarAngleDeg": 23,
+  "masterSvg": "/brand/logos/svg/bsd-symbol-ink.svg"
+}
