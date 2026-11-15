@@ -1,0 +1,93 @@
+"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { gsap, ScrollTrigger, SplitText, EASE } from "@/lib/gsap";
+import { useStore } from "@/lib/store";
+
+/**
+ * Site-wide reveal system. Mark elements in server components:
+ *
+ *   data-reveal="lines"  heading split into lines that rise from a mask
+ *   data-reveal="fade"   block that eases up and in
+ *   data-reveal="rule"   hairline that draws left to right
+ *
+ * Everything triggers once as it scrolls into view. With reduced motion (or
+ * if JS never arrives) the content is simply visible.
+ */
+export function Motion() {
+  const pathname = usePathname();
+  const reducedMotion = useStore((s) => s.reducedMotion);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (reducedMotion) {
+      root.classList.remove("motion-ok");
+      return;
+    }
+
+    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+
+    const build = () => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
+        const scope = document.querySelector("main") ?? document.body;
+        const trigger = (el: Element) => ({ trigger: el, start: "top 88%", once: true });
+
+        scope.querySelectorAll<HTMLElement>('[data-reveal="lines"]').forEach((el) => {
+          SplitText.create(el, {
+            type: "lines",
+            mask: "lines",
+            autoSplit: true,
+            // Keep the paragraph readable as-is; no aria-label on a <p>.
+            aria: "none",
+            onSplit: (self) => {
+              gsap.set(el, { visibility: "visible" });
+              return gsap.from(self.lines, {
+                yPercent: 112,
+                duration: 1.3,
+                stagger: 0.09,
+                ease: EASE.out,
+                scrollTrigger: trigger(el),
+              });
+            },
+          });
+        });
+
+        scope.querySelectorAll<HTMLElement>('[data-reveal="fade"]').forEach((el) => {
+          gsap.set(el, { visibility: "visible" });
+          gsap.from(el, {
+            y: 28,
+            autoAlpha: 0,
+            duration: 1.2,
+            ease: EASE.outSoft,
+            scrollTrigger: trigger(el),
+          });
+        });
+
+        scope.querySelectorAll<HTMLElement>('[data-reveal="rule"]').forEach((el) => {
+          gsap.set(el, { visibility: "visible", transformOrigin: "left center" });
+          gsap.from(el, {
+            scaleX: 0,
+            duration: 1.4,
+            ease: EASE.inOut,
+            scrollTrigger: trigger(el),
+          });
+        });
+      });
+      ScrollTrigger.refresh();
+      root.classList.add("motion-ready");
+    };
+
+    // Split after fonts settle so line breaks are the real ones.
+    document.fonts.ready.then(() => requestAnimationFrame(build));
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
+  }, [pathname, reducedMotion]);
+
+  return null;
+}

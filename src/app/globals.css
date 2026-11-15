@@ -1,0 +1,335 @@
+@import "tailwindcss";
+
+/* Brand tokens — docs/brand.md is law. */
+@theme {
+  --color-ink: #0a0a0a;
+  --color-carbon: #141414;
+  --color-graphite: #262626;
+  --color-steel: #5c5c5c;
+  --color-fog: #a3a3a0;
+  --color-bone: #e6e4df;
+  --color-paper: #f4f3ef;
+  --color-white: #ffffff;
+  /* The one functional exception: form errors only. */
+  --color-error: #b3261e;
+
+  --font-display: var(--font-inter-tight), "Inter Tight", system-ui, sans-serif;
+  --font-sans: var(--font-inter), Inter, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-power4: cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  --spacing-gutter: clamp(20px, 4vw, 64px);
+  --spacing-nav: 72px;
+}
+
+@layer base {
+  html {
+    background: var(--color-ink);
+    color: var(--color-white);
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-white);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Hide the system cursor only when the custom one is live. */
+  html.has-cursor,
+  html.has-cursor a,
+  html.has-cursor button {
+    cursor: none;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Type scale */
+@utility t-hero {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(64px, 12vw, 200px);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+@utility t-h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(48px, 7vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+@utility t-h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(32px, 4vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+@utility t-h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(24px, 2vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+@utility t-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(16px, 1.1vw, 18px);
+  line-height: 1.5;
+}
+@utility t-small {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+@utility t-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+@utility t-accent {
+  font-weight: 300;
+  font-style: italic;
+}
+
+@utility gutter {
+  padding-inline: var(--spacing-gutter);
+}
+
+/* Paper sections flip the text pair. */
+@utility surface-paper {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  --muted: var(--color-steel);
+  --rule: var(--color-bone);
+}
+@utility surface-ink {
+  --muted: var(--color-fog);
+  --rule: var(--color-graphite);
+}
+@utility text-muted {
+  color: var(--muted, var(--color-fog));
+}
+@utility border-rule {
+  border-color: var(--rule, var(--color-graphite));
+}
+
+/* Film grain: very low opacity, dark surfaces. */
+.grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.045;
+  will-change: transform;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain 1.2s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4%, 3%, 0); }
+  40% { transform: translate3d(3%, -5%, 0); }
+  60% { transform: translate3d(-2%, 4%, 0); }
+  80% { transform: translate3d(5%, 2%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* Project imagery: grayscale until touched. Color = the client's work. */
+.work-image {
+  filter: grayscale(1) contrast(1.02);
+  transition: filter 1.1s var(--ease-expo), transform 1.4s var(--ease-expo);
+}
+a:hover .work-image,
+a:focus-visible .work-image,
+.work-image.is-live {
+  filter: grayscale(0);
+}
+
+/* Reveal primitives start hidden only when JS + motion are available. */
+html.motion-ok [data-reveal] {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+  .work-image {
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom cursor */
+.cursor-ring__circle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  transition:
+    width 0.7s var(--ease-expo),
+    height 0.7s var(--ease-expo),
+    margin 0.7s var(--ease-expo),
+    background-color 0.7s var(--ease-expo),
+    transform 0.4s var(--ease-expo);
+}
+.cursor-ring__label {
+  color: #000;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.3s linear;
+}
+.cursor-ring[data-state="link"] .cursor-ring__circle {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+}
+.cursor-ring[data-state="label"] .cursor-ring__circle {
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  background: #fff;
+}
+.cursor-ring[data-state="label"] .cursor-ring__label {
+  opacity: 1;
+  transition-delay: 0.15s;
+}
+.cursor-ring.is-down .cursor-ring__circle {
+  transform: scale(0.88);
+}
+.cursor-dot {
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 999px;
+  background: #fff;
+  transition: opacity 0.3s linear;
+}
+.cursor-ring[data-state="label"] + div .cursor-dot {
+  opacity: 0;
+}
+
+/* Hero lines rise with CSS so the first paint never waits for JS. */
+.rise-mask {
+  display: block;
+  overflow: clip;
+  overflow-clip-margin: 0.12em;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.rise-line {
+  display: block;
+  will-change: transform;
+}
+html.motion-ok .rise-line {
+  animation: rise 1.4s var(--ease-expo) both;
+  animation-delay: calc(var(--i, 0) * 0.1s);
+}
+@keyframes rise {
+  from { transform: translate3d(0, 58%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+html.motion-ok .fade-in {
+  animation: fade-in 1.4s var(--ease-expo) both;
+  animation-delay: calc(0.5s + var(--i, 0) * 0.1s);
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Link underline drawn like the line: left to right, slow. */
+.link-line {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.9s var(--ease-expo);
+  padding-bottom: 2px;
+}
+.link-line:hover,
+.link-line:focus-visible,
+a:hover .link-line {
+  background-size: 100% 1px;
+}
+
+/* Sound toggle bars */
+.sound-bar {
+  transition: transform 0.6s var(--ease-expo);
+}
+.sound-bar[data-on="true"] {
+  animation: sound-bar 1.1s ease-in-out infinite alternate;
+}
+@keyframes sound-bar {
+  from { scale: 1 0.35; }
+  to { scale: 1 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sound-bar[data-on="true"] {
+    animation: none;
+  }
+}
+
+/* Persistent scene */
+.scene-fallback {
+  background:
+    radial-gradient(120% 70% at 70% 105%, rgba(255, 255, 255, 0.055), transparent 60%),
+    radial-gradient(80% 50% at 15% 100%, rgba(255, 255, 255, 0.03), transparent 65%);
+}
+.scene-live {
+  animation: scene-in 2.4s var(--ease-expo) both;
+}
+@keyframes scene-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
