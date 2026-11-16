@@ -16,6 +16,8 @@ export type Project = {
   /** null until the owner fills the [RESULT] line in docs/content.md. */
   result: string | null;
   live?: string;
+  /** Tech stack for "How we built it". Hidden until the owner supplies it. */
+  stack?: string[];
   plate: string;
   screen: string;
 };

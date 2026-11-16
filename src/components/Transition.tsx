@@ -24,7 +24,8 @@ import { useLenis } from "./SmoothScroll";
  * still drawn as the line. One system, used for every route change.
  */
 
-type Navigate = (href: string) => void;
+/** `shared` is an image that should grow into the next page (work → case study). */
+type Navigate = (href: string, shared?: HTMLImageElement | null) => void;
 
 const TransitionContext = createContext<Navigate>(() => {});
 
@@ -50,6 +51,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   const busy = useRef(false);
   const pending = useRef<string | null>(null);
   const failsafe = useRef<number | undefined>(undefined);
+  const clone = useRef<HTMLImageElement | null>(null);
 
   const reset = useCallback(() => {
     busy.current = false;
@@ -57,7 +59,40 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
     window.clearTimeout(failsafe.current);
     setTransitioning(false);
     if (cover.current) gsap.set(cover.current, { autoAlpha: 0, yPercent: 0 });
+    clone.current?.remove();
+    clone.current = null;
+    gsap.set("main, [data-footer]", { clearProps: "opacity,visibility" });
   }, [setTransitioning]);
+
+  /** Shared element: the thumbnail travels to the case study's hero and becomes it. */
+  const enterShared = useCallback(() => {
+    const img = clone.current;
+    const target = document.querySelector<HTMLElement>("[data-shared-target]");
+    window.scrollTo(0, 0);
+    lenis?.scrollTo(0, { immediate: true, force: true });
+    ScrollTrigger.refresh();
+    window.dispatchEvent(new CustomEvent("bsd:page-enter"));
+    if (!img || !target) return reset();
+
+    const to = target.getBoundingClientRect();
+    gsap.set(target, { visibility: "hidden" });
+    gsap
+      .timeline({
+        onComplete: () => {
+          gsap.set(target, { clearProps: "visibility" });
+          reset();
+        },
+      })
+      .to(img, {
+        left: to.left,
+        top: to.top,
+        width: to.width,
+        height: to.height,
+        duration: 1.05,
+        ease: EASE.inOut,
+      })
+      .to("main, [data-footer]", { autoAlpha: 1, duration: 0.9, ease: "power2.out" }, 0.45);
+  }, [lenis, reset]);
 
   const enter = useCallback(() => {
     const el = cover.current;
@@ -79,7 +114,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   }, [lenis, reducedMotion, reset]);
 
   const navigate = useCallback<Navigate>(
-    (href) => {
+    (href, shared) => {
       if (busy.current) return;
       const target = new URL(href, window.location.href);
       if (target.pathname === window.location.pathname && !target.hash) return;
@@ -92,6 +127,39 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
       busy.current = true;
       pending.current = target.pathname;
       setTransitioning(true);
+
+      const from = shared?.getBoundingClientRect();
+      if (shared && from && from.width > 40 && !reducedMotion) {
+        const img = shared.cloneNode() as HTMLImageElement;
+        img.removeAttribute("class");
+        img.removeAttribute("sizes");
+        img.removeAttribute("srcset");
+        img.src = shared.currentSrc || shared.src;
+        img.alt = "";
+        Object.assign(img.style, {
+          position: "fixed",
+          left: from.left + "px",
+          top: from.top + "px",
+          width: from.width + "px",
+          height: from.height + "px",
+          objectFit: "cover",
+          zIndex: "75",
+          pointerEvents: "none",
+          maxWidth: "none",
+        });
+        document.body.appendChild(img);
+        clone.current = img;
+        gsap.to("main, [data-footer]", {
+          autoAlpha: 0,
+          duration: 0.5,
+          ease: "power2.out",
+          onComplete: () => {
+            router.push(href);
+            failsafe.current = window.setTimeout(reset, 4000);
+          },
+        });
+        return;
+      }
 
       const go = () => {
         router.push(href);
@@ -133,7 +201,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         .set(el, { backgroundColor: "#0a0a0a" })
         .set(root, { autoAlpha: 0 });
     },
-    [enter, reducedMotion, router, setTransitioning],
+    [enter, reducedMotion, reset, router, setTransitioning],
   );
 
   // The new route has rendered: lift the cover.
@@ -141,10 +209,11 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
     if (busy.current && pending.current === pathname) {
       window.clearTimeout(failsafe.current);
       pending.current = null;
-      const id = requestAnimationFrame(() => requestAnimationFrame(enter));
+      const next = clone.current ? enterShared : enter;
+      const id = requestAnimationFrame(() => requestAnimationFrame(next));
       return () => cancelAnimationFrame(id);
     }
-  }, [pathname, enter]);
+  }, [pathname, enter, enterShared]);
 
   // Back/forward: no cover, but still reset scroll-linked work.
   useEffect(() => {
@@ -171,10 +240,14 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   );
 }
 
-type TLinkProps = ComponentProps<typeof Link> & { href: string };
+type TLinkProps = ComponentProps<typeof Link> & {
+  href: string;
+  /** Grow this link's image into the next page instead of using the serpent cover. */
+  shared?: boolean;
+};
 
 /** Internal link that routes through the serpent transition. */
-export function TLink({ href, onClick, children, ...rest }: TLinkProps) {
+export function TLink({ href, onClick, shared, children, ...rest }: TLinkProps) {
   const navigate = useNavigate();
 
   const handle = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -189,7 +262,7 @@ export function TLink({ href, onClick, children, ...rest }: TLinkProps) {
     )
       return;
     event.preventDefault();
-    navigate(href);
+    navigate(href, shared ? event.currentTarget.querySelector("img") : null);
   };
 
   return (

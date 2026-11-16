@@ -104,3 +104,29 @@ export const formatPhp = (n: number) => `₱${n.toLocaleString("en-PH")}`;
 
 export const formatRange = (p: Package["php"]) =>
   `${formatPhp(p.low)}–${p.high.toLocaleString("en-PH")}${p.open ? "+" : ""}`;
+
+/** International (USD) ranges, per docs/pricing.md. `null` high = open-ended. */
+export const usdRanges: Record<string, { low: number; high: number | null } | null> = {
+  "editorial-essential": { low: 2_500, high: 6_000 },
+  "editorial-signature": { low: 2_500, high: 6_000 },
+  "immersive-scene": { low: 6_000, high: 12_000 },
+  "immersive-flagship": { low: 15_000, high: null },
+  "systems-discovery": { low: 8_000, high: null },
+  "systems-build": { low: 8_000, high: null },
+  // No USD figure in the price book for mobile.
+  "mobile-app": null,
+};
+
+/**
+ * Which care plan the builder suggests for each package. The price book asks
+ * for a recommendation but does not define one — this mapping is a proposal.
+ */
+export const recommendedCare: Record<string, (typeof carePlans)[number]["id"]> = {
+  "editorial-essential": "keep",
+  "editorial-signature": "grow",
+  "immersive-scene": "grow",
+  "immersive-flagship": "partner",
+  "systems-discovery": "partner",
+  "systems-build": "partner",
+  "mobile-app": "partner",
+};
