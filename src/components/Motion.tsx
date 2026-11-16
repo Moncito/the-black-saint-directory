@@ -18,6 +18,7 @@ import { useStore } from "@/lib/store";
 export function Motion() {
   const pathname = usePathname();
   const reducedMotion = useStore((s) => s.reducedMotion);
+  const introDone = useStore((s) => s.introDone);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -25,6 +26,9 @@ export function Motion() {
       root.classList.remove("motion-ok");
       return;
     }
+
+    // Nothing reveals behind the intro; it all starts as the page fades up.
+    if (!introDone) return;
 
     let ctx: gsap.Context | undefined;
     let cancelled = false;
@@ -87,7 +91,7 @@ export function Motion() {
       cancelled = true;
       ctx?.revert();
     };
-  }, [pathname, reducedMotion]);
+  }, [pathname, reducedMotion, introDone]);
 
   return null;
 }

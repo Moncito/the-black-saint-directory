@@ -61,6 +61,20 @@ export function detectTier(): Tier {
 }
 
 export const tierSettings = {
-  full: { dpr: [1, 2] as [number, number], antialias: true, fogOctaves: 4 },
-  lite: { dpr: [1, 1.25] as [number, number], antialias: false, fogOctaves: 2 },
+  full: {
+    dpr: [1, 2] as [number, number],
+    antialias: true,
+    fogOctaves: 4,
+    serpentSegments: 520,
+    serpentRadial: 14,
+    scales: true,
+  },
+  lite: {
+    dpr: [1, 1.5] as [number, number],
+    antialias: false,
+    fogOctaves: 2,
+    serpentSegments: 280,
+    serpentRadial: 8,
+    scales: false,
+  },
 } as const;

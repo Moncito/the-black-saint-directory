@@ -28,7 +28,9 @@ export function SceneRoot() {
         ? window.requestIdleCallback(start, { timeout: 2000 })
         : window.setTimeout(start, 400);
     };
-    if (document.readyState === "complete") schedule();
+    // The intro needs the scene now; otherwise 3D waits for an idle moment.
+    if (document.documentElement.classList.contains("intro-pending")) start();
+    else if (document.readyState === "complete") schedule();
     else window.addEventListener("load", schedule, { once: true });
     return () => {
       cancelled = true;

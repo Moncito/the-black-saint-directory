@@ -5,6 +5,7 @@ import { stations } from "@/content/process";
 import { projects } from "@/content/projects";
 import { TLink } from "@/components/Transition";
 import { ManilaClock } from "@/components/ManilaClock";
+import { HeroStage } from "@/components/HeroStage";
 import { Cta, ProjectCard, SectionHead } from "@/components/ui";
 
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
@@ -12,9 +13,10 @@ const i = (n: number) => ({ "--i": n }) as CSSProperties;
 export default function Home() {
   return (
     <>
-      {/* 1 — Hero. The 3D serpent cross and the intro arrive in Phase 2. */}
+      {/* 1 — Hero. The serpent cross is live 3D in the shared canvas behind. */}
       <section className="gutter relative flex min-h-[100svh] flex-col justify-end pb-6 pt-[var(--spacing-nav)]">
-        <h1 className="t-hero max-w-[9.5em] pb-[6vh]">
+        <HeroStage />
+        <h1 className="t-hero pointer-events-none relative max-w-[9.5em] pb-[6vh]">
           <span className="rise-mask">
             <span className="rise-line" style={i(0)}>
               {hero.line1}
@@ -27,7 +29,7 @@ export default function Home() {
           </span>
         </h1>
         <div
-          className="fade-in t-label flex flex-wrap items-center justify-between gap-x-10 gap-y-2 border-t border-graphite pt-5 text-fog"
+          className="fade-in t-label relative flex flex-wrap items-center justify-between gap-x-10 gap-y-2 border-t border-graphite pt-5 text-fog"
           style={i(2)}
         >
           <span>{site.location}</span>

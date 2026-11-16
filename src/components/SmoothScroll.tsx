@@ -16,7 +16,7 @@ export const useLenis = () => useContext(LenisContext);
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const [lenis, setLenis] = useState<Lenis | null>(null);
   const reducedMotion = useStore((s) => s.reducedMotion);
-  const locked = useStore((s) => s.transitioning || s.menuOpen);
+  const locked = useStore((s) => s.transitioning || s.menuOpen || !s.introDone);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -37,12 +37,17 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     return () => {
       gsap.ticker.remove(raf);
       instance.destroy();
+      // Never leave a scroll lock behind (e.g. when reduced motion switches Lenis off).
+      document.documentElement.classList.remove("lenis", "lenis-stopped", "lenis-smooth");
       setLenis(null);
     };
   }, [reducedMotion]);
 
   useEffect(() => {
-    if (!lenis) return;
+    if (!lenis) {
+      document.documentElement.classList.remove("lenis", "lenis-stopped", "lenis-smooth");
+      return;
+    }
     if (locked) lenis.stop();
     else lenis.start();
   }, [lenis, locked]);

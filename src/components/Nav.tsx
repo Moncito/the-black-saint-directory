@@ -75,7 +75,9 @@ export function Nav() {
 
   return (
     <>
-      <header className="gutter pointer-events-none fixed inset-x-0 top-0 z-50 flex h-[var(--spacing-nav)] items-center justify-between text-white mix-blend-difference">
+      <header
+        data-nav
+        className="gutter pointer-events-none fixed inset-x-0 top-0 z-50 flex h-[var(--spacing-nav)] items-center justify-between text-white mix-blend-difference">
         <TLink
           href="/"
           aria-label={`${site.name} — home`}

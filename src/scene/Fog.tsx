@@ -3,6 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { serpent } from "@/serpent/state";
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -18,7 +19,11 @@ const fragment = /* glsl */ `
   uniform float uTime;
   uniform float uAspect;
   uniform float uIntensity;
-  uniform vec2 uPointer;
+  uniform vec2 uLight;
+  uniform float uCore;
+  uniform float uLit;
+
+  const vec3 CANDLE = vec3(1.0, 0.86, 0.68);
 
   float hash(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -50,7 +55,6 @@ const fragment = /* glsl */ `
 
   void main() {
     vec2 p = vec2(vUv.x * uAspect, vUv.y) * 1.6;
-    p += uPointer * 0.06;
     float t = uTime * 0.018;
 
     // Domain-warped fog, drifting slowly.
@@ -59,16 +63,23 @@ const fragment = /* glsl */ `
 
     // Denser toward the floor, clear at the top edge for the nav.
     float falloff = smoothstep(1.15, 0.1, vUv.y) * 0.75 + 0.25;
-    float fog = smoothstep(0.38, 0.95, f) * falloff;
+    float fog = smoothstep(0.38, 0.95, f) * falloff * 0.11 * uIntensity;
 
-    float alpha = fog * 0.11 * uIntensity;
-    gl_FragColor = vec4(vec3(alpha), alpha);
+    // The candle rakes across the fog and shows as a small warm point.
+    vec2 d = (vUv - uLight) * vec2(uAspect, 1.0);
+    float r2 = dot(d, d);
+    float lit = uLit * exp(-r2 * 6.0);
+    float core = uCore * (exp(-r2 * 26000.0) * 0.9 + exp(-r2 * 900.0) * 0.16 + exp(-r2 * 40.0) * 0.035);
+
+    vec3 color = vec3(fog) + CANDLE * (fog * lit * 3.2 + lit * 0.012 * uIntensity + core);
+    float alpha = min(max(color.r, max(color.g, color.b)), 1.0);
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
 /**
- * Faint drifting fog: the atmosphere every route shares. One fullscreen
- * triangle; octave count scales with the quality tier.
+ * Faint drifting fog and the candle's glow: the atmosphere every route
+ * shares. One fullscreen triangle; octave count scales with the quality tier.
  */
 export function Fog({ octaves, intensity }: { octaves: number; intensity: number }) {
   const material = useRef<THREE.ShaderMaterial>(null);
@@ -89,7 +100,9 @@ export function Fog({ octaves, intensity }: { octaves: number; intensity: number
       uTime: { value: 0 },
       uAspect: { value: 1 },
       uIntensity: { value: 0 },
-      uPointer: { value: new THREE.Vector2() },
+      uLight: { value: new THREE.Vector2(0.5, 0.5) },
+      uCore: { value: 0 },
+      uLit: { value: 0 },
     }),
     [],
   );
@@ -98,14 +111,18 @@ export function Fog({ octaves, intensity }: { octaves: number; intensity: number
     const u = material.current?.uniforms;
     if (!u) return;
     const dt = Math.min(delta, 0.1);
+    const target = intensity * serpent.fog;
     u.uTime.value += dt;
     u.uAspect.value = size.width / Math.max(size.height, 1);
     // Heavy easing toward the route's target — nothing snaps.
     u.uIntensity.value =
-      state.frameloop === "demand"
-        ? intensity
-        : THREE.MathUtils.damp(u.uIntensity.value, intensity, 1.2, dt);
-    (u.uPointer.value as THREE.Vector2).lerp(state.pointer, 1 - Math.exp(-dt * 1.5));
+      state.frameloop === "always" ? THREE.MathUtils.damp(u.uIntensity.value, target, 1.2, dt) : target;
+    (u.uLight.value as THREE.Vector2).set(
+      serpent.lightX / size.width + 0.5,
+      serpent.lightY / size.height + 0.5,
+    );
+    u.uCore.value = serpent.core;
+    u.uLit.value = serpent.mode === "idle" ? 0 : Math.min(serpent.light, 1.5) * 0.6;
   });
 
   return (

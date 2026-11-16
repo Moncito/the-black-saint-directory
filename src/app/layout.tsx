@@ -5,6 +5,7 @@ import { site } from "@/content/site";
 import { Providers } from "@/components/Providers";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { Intro } from "@/components/Intro";
 import { SceneRoot } from "@/scene/SceneRoot";
 import "./globals.css";
 
@@ -53,11 +54,12 @@ export const viewport: Viewport = {
 };
 
 /**
- * Runs before first paint: enables motion styling only when the visitor has
- * not asked for reduced motion, and un-hides everything if the reveal system
- * never reports ready (so content is never held hostage by JS).
+ * Runs before first paint. Decides whether this session still owes the visitor
+ * the intro (once per session; ?intro=0 skips it), and enables motion styling
+ * only when reduced motion is not requested. Both have failsafes: if the app
+ * never boots, everything is un-hidden, so content is never held hostage by JS.
  */
-const bootScript = `(function(){var d=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-ok');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-ok')},5000)}})()`;
+const bootScript = `(function(){var d=document.documentElement,c=d.classList,q=location.search,seen=false;try{seen=!!sessionStorage.getItem('bsd-intro')}catch(e){}if(/[?&]intro=0/.test(q))seen=true;if(/[?&](intro=1|capture)/.test(q))seen=false;if(!seen){c.add('intro-pending');setTimeout(function(){if(!window.__bsdIntro)c.remove('intro-pending')},6000)}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){c.add('motion-ok');setTimeout(function(){if(!c.contains('motion-ready')&&!c.contains('intro-pending'))c.remove('motion-ok')},5000)}})()`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -78,6 +80,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <Providers>
           <SceneRoot />
+          <Intro />
           <Nav />
           <main id="main" tabIndex={-1} className="relative z-10 outline-none">
             {children}
