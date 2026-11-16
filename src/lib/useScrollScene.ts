@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, type DependencyList, type RefObject } from "react";
+import { useEffect, useLayoutEffect, type DependencyList, type RefObject } from "react";
 import { gsap, ScrollTrigger } from "./gsap";
 import { useStore } from "./store";
+
+// Layout effects do not run on the server; fall back to keep React quiet there.
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 let pending = 0;
 
@@ -22,6 +25,12 @@ export function refreshSoon() {
  * trigger to a GSAP context, and tears it all down on unmount. With reduced
  * motion nothing is built: each section's markup is complete and readable on
  * its own, and CSS shows it in its finished state.
+ *
+ * This must be a layout effect. Pinning wraps a section in a spacer element,
+ * so the DOM no longer matches what React rendered. A layout effect's cleanup
+ * runs before React removes the old page's nodes, which gives GSAP the chance
+ * to unwrap them first. With a plain effect the cleanup comes too late and
+ * route changes crash with "removeChild: not a child of this node".
  */
 export function useScrollScene(
   scope: RefObject<HTMLElement | null>,
@@ -31,7 +40,7 @@ export function useScrollScene(
   const introDone = useStore((s) => s.introDone);
   const reducedMotion = useStore((s) => s.reducedMotion);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const root = scope.current;
     if (!root || !introDone || reducedMotion) return;
 
