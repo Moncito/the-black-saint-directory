@@ -43,9 +43,6 @@ export const serpent = {
 /** Pointer in px from the viewport centre (y up). */
 export const pointer = { x: 0, y: 0, active: false, fine: false };
 
-/** Drag-to-orbit on the hero. Angles in radians, velocities in rad/s. */
-export const orbit = { dragging: false, yaw: 0, pitch: 0, vYaw: 0, vPitch: 0 };
-
 let listening = false;
 
 export function listenPointer() {
@@ -85,14 +82,6 @@ export const SYMBOL = { width: 102, height: 182, cx: 54, cy: 103 } as const;
 /** Where the serpent forms in the intro: large, dead centre. */
 export function introHeight(w: number, h: number) {
   return Math.min(h * 0.52, w * 0.9 * (SYMBOL.height / SYMBOL.width));
-}
-
-/**
- * Px per logo unit for the roaming hero serpent. The body is 12 units thick,
- * so this sets its weight on screen: about 5% of the viewport height.
- */
-export function heroUnit(w: number, h: number) {
-  return w >= 900 ? h / 250 : h / 340;
 }
 
 export const CAMERA_FOV = 35;

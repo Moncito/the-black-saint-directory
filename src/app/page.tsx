@@ -5,7 +5,6 @@ import { stations } from "@/content/process";
 import { projects } from "@/content/projects";
 import { TLink } from "@/components/Transition";
 import { ManilaClock } from "@/components/ManilaClock";
-import { HeroStage } from "@/components/HeroStage";
 import { ProjectCard, SectionHead } from "@/components/ui";
 
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
@@ -13,9 +12,8 @@ const i = (n: number) => ({ "--i": n }) as CSSProperties;
 export default function Home() {
   return (
     <>
-      {/* 1 — Hero. The serpent roams the shared 3D canvas behind the type. */}
+      {/* 1 — Hero. Type, fog and the candle cursor. */}
       <section className="gutter relative flex min-h-[100svh] flex-col justify-end pb-6 pt-[var(--spacing-nav)]">
-        <HeroStage />
         <h1 className="t-hero pointer-events-none relative max-w-[9.5em] pb-[6vh]">
           <span className="rise-mask">
             <span className="rise-line" style={i(0)}>

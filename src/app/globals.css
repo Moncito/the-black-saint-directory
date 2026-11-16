@@ -469,19 +469,6 @@ html.intro-reveal [data-nav-logo] {
   border-color: #fff;
 }
 
-/* ---------- Hero stage ---------- */
-.hero-stage {
-  position: absolute;
-  inset: var(--spacing-nav) 0 38% 22%;
-  touch-action: pan-y;
-  -webkit-user-select: none;
-  user-select: none;
-}
-@media (min-width: 900px) {
-  .hero-stage {
-    inset: var(--spacing-nav) 0 12% 50%;
-  }
-}
 
 /* ---------- Footer call to action: a dark, living box ---------- */
 .cta-box {

@@ -13,7 +13,6 @@ const vertex = /* glsl */ `
   uniform float uWiggle;
   uniform float uTime;
   uniform float uFlat;
-  uniform float uLoop;
 
   in vec3 aOffset;
   in vec3 aNormal;
@@ -29,9 +28,7 @@ const vertex = /* glsl */ `
   out float vViewZ;
 
   vec3 fetchRow(float s, int row) {
-    // An open path clamps at its ends; a closed loop wraps.
-    float t = uLoop > 0.5 ? fract(s / uTotal) : clamp(s / uTotal, 0.0, 1.0);
-    float f = t * (uCount - 1.0);
+    float f = clamp(s / uTotal, 0.0, 1.0) * (uCount - 1.0);
     float i = floor(f);
     vec3 a = texelFetch(uPath, ivec2(int(i), row), 0).xyz;
     vec3 b = texelFetch(uPath, ivec2(int(min(i + 1.0, uCount - 1.0)), row), 0).xyz;
@@ -43,7 +40,7 @@ const vertex = /* glsl */ `
     vec3 p = fetchRow(s, 0);
     vec3 t = normalize(fetchRow(s, 1));
     vec3 side = normalize(cross(t, vec3(0.0, 0.0, 1.0)) + vec3(1e-4, 0.0, 0.0));
-    p += side * amp * sin(s * 0.043 - uTime * mix(5.2, 1.6, uLoop));
+    p += side * amp * sin(s * 0.043 - uTime * 5.2);
     p.z *= 1.0 - uFlat;
     return p;
   }
@@ -60,7 +57,7 @@ const vertex = /* glsl */ `
     vec3 N = cross(B, T);
 
     // Nothing exists before the start of the path.
-    float born = mix(smoothstep(-2.0, 10.0, s), 1.0, uLoop) * mix(aTaper, 1.0, uFlat);
+    float born = smoothstep(-2.0, 10.0, s) * mix(aTaper, 1.0, uFlat);
     float depth = 1.0 - uFlat;
 
     vec3 local = c + T * aOffset.x + B * aOffset.y * born + N * aOffset.z * born * depth;
@@ -189,7 +186,6 @@ export function createSerpentMaterial(path: SerpentPath, scales: boolean) {
       uCamDist: { value: 1000 },
       uUnit: { value: 1 },
       uFar: { value: 1300 },
-      uLoop: { value: 0 },
     },
     side: THREE.DoubleSide,
     transparent: true,
