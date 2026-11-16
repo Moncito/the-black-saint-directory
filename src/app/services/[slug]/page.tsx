@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getService, services } from "@/content/services";
 import { TLink } from "@/components/Transition";
-import { Label, PageHeader } from "@/components/ui";
+import { Label, PageHeader, SectionHead } from "@/components/ui";
+import { TypePlayground } from "@/components/demos/TypePlayground";
+import { ProductViewer } from "@/components/demos/ProductViewer";
+import { SystemsDashboard } from "@/components/demos/SystemsDashboard";
+import { PhoneScroll } from "@/components/demos/PhoneScroll";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,7 +20,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return service ? { title: service.name, description: service.description } : {};
 }
 
-/** Phase 1 skeleton. The live demo for each service arrives in Phase 4. */
+/** Every service page proves itself with something you can touch. */
+const demos: Record<string, ReactNode> = {
+  "editorial-sites": <TypePlayground />,
+  "immersive-3d": <ProductViewer />,
+  systems: <SystemsDashboard />,
+  mobile: <PhoneScroll />,
+};
+
 export default async function ServicePage({ params }: Props) {
   const service = getService((await params).slug);
   if (!service) notFound();
@@ -24,7 +36,7 @@ export default async function ServicePage({ params }: Props) {
   return (
     <>
       <PageHeader label={`Services — ${service.index}`} title={service.name} />
-      <section className="gutter grid gap-10 pb-[16vh] md:grid-cols-[1fr_2fr]">
+      <section className="gutter grid gap-10 pb-[12vh] md:grid-cols-[1fr_2fr]">
         <p data-reveal="fade" className="t-label">
           {service.priceFrom}
         </p>
@@ -33,7 +45,14 @@ export default async function ServicePage({ params }: Props) {
         </p>
       </section>
 
-      <section className="gutter pb-[10vh]">
+      <section className="pb-[16vh]" aria-label="Live demo">
+        <div className="gutter">
+          <SectionHead index={service.index} label="Live demo" />
+        </div>
+        <div className={service.slug === "mobile" ? "" : "gutter"}>{demos[service.slug]}</div>
+      </section>
+
+      <section className="gutter pb-[14vh]">
         <Label>Services</Label>
         <ul className="mt-6 border-t border-graphite">
           {others.map((other) => (
@@ -51,7 +70,7 @@ export default async function ServicePage({ params }: Props) {
             </li>
           ))}
         </ul>
-      </section>
+      </section>
     </>
   );
 }

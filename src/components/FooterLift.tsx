@@ -31,7 +31,7 @@ export function FooterLift({ children }: { children: ReactNode }) {
   });
 
   return (
-    <div ref={root} className="relative z-[5] overflow-clip">
+    <div ref={root} data-footer className="relative z-[5] overflow-clip">
       <div className="will-change-transform">{children}</div>
     </div>
   );

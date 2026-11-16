@@ -68,7 +68,12 @@ export function WorkGallery() {
         <ul className="gallery__track">
           {projects.map((project) => (
             <li key={project.slug} className="gallery__card">
-              <TLink href={`/work/${project.slug}`} data-cursor="View" className="group block">
+              <TLink
+                href={`/work/${project.slug}`}
+                shared
+                data-cursor="View"
+                className="group block"
+              >
                 <div className="overflow-hidden bg-carbon">
                   <Image
                     src={project.plate}
