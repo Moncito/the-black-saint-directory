@@ -34,7 +34,7 @@ const linkClass = "t-small inline-flex min-h-9 items-center text-steel transitio
 
 export function Footer() {
   return (
-    <footer className="surface-paper relative z-10 px-3 pb-6 pt-3 md:px-5 md:pt-5">
+    <footer className="surface-paper relative px-3 pb-6 pt-3 md:px-5 md:pt-5">
       <FooterCta />
 
       <div className="gutter grid gap-14 pb-16 pt-16 md:grid-cols-[1.3fr_2fr] md:pt-24">

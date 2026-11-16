@@ -5,6 +5,7 @@ import { site } from "@/content/site";
 import { Providers } from "@/components/Providers";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { FooterLift } from "@/components/FooterLift";
 import { Intro } from "@/components/Intro";
 import { SceneRoot } from "@/scene/SceneRoot";
 import "./globals.css";
@@ -85,7 +86,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main id="main" tabIndex={-1} className="relative z-10 outline-none">
             {children}
           </main>
-          <Footer />
+          <FooterLift>
+            <Footer />
+          </FooterLift>
         </Providers>
         <div aria-hidden="true" className="grain" />
       </body>
