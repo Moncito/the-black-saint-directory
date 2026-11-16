@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger, SplitText, EASE } from "@/lib/gsap";
 import { useStore } from "@/lib/store";
+import { refreshSoon } from "@/lib/useScrollScene";
 
 /**
  * Site-wide reveal system. Mark elements in server components:
@@ -19,6 +20,29 @@ export function Motion() {
   const pathname = usePathname();
   const reducedMotion = useStore((s) => s.reducedMotion);
   const introDone = useStore((s) => s.introDone);
+
+  // Anything that changes the page's height after load — a filter, a view
+  // switch, an image arriving — moves every section below it. Re-measure, so
+  // scroll-linked work never runs against stale positions.
+  useEffect(() => {
+    if (reducedMotion || !introDone) return;
+    let last = document.documentElement.scrollHeight;
+    const onRefresh = () => {
+      last = document.documentElement.scrollHeight;
+    };
+    const observer = new ResizeObserver(() => {
+      const next = document.documentElement.scrollHeight;
+      if (Math.abs(next - last) < 8) return;
+      last = next;
+      refreshSoon();
+    });
+    observer.observe(document.body);
+    ScrollTrigger.addEventListener("refresh", onRefresh);
+    return () => {
+      observer.disconnect();
+      ScrollTrigger.removeEventListener("refresh", onRefresh);
+    };
+  }, [reducedMotion, introDone]);
 
   useEffect(() => {
     const root = document.documentElement;

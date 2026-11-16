@@ -6,6 +6,7 @@ import { projects } from "@/content/projects";
 import { gsap, Flip } from "@/lib/gsap";
 import { useStore } from "@/lib/store";
 import { tick } from "@/lib/sound";
+import { refreshSoon } from "@/lib/useScrollScene";
 import { TLink } from "@/components/Transition";
 import { Badge } from "@/components/ui";
 
@@ -35,6 +36,7 @@ export function WorkIndex() {
   const list = useRef<HTMLUListElement>(null);
   const preview = useRef<HTMLDivElement>(null);
   const flip = useRef<Flip.FlipState | null>(null);
+  const heightBefore = useRef(0);
 
   const visible = useMemo(
     () => new Set(projects.filter((p) => !filter || typeOf(p.meta) === filter).map((p) => p.slug)),
@@ -43,8 +45,10 @@ export function WorkIndex() {
 
   /** Record where everything is, then let React move it. */
   const change = (apply: () => void) => {
-    if (list.current && !reducedMotion)
+    if (list.current && !reducedMotion) {
       flip.current = Flip.getState(list.current.querySelectorAll("[data-flip-id]"));
+      heightBefore.current = list.current.offsetHeight;
+    }
     tick("click");
     apply();
   };
@@ -52,19 +56,31 @@ export function WorkIndex() {
   useIsomorphicLayoutEffect(() => {
     const state = flip.current;
     flip.current = null;
-    if (!state) return;
+    const ul = list.current;
+    if (!state || !ul) return;
+    // Flip lifts every item out of the flow while it travels. Hold the list at
+    // the taller of its old and new heights meanwhile, so the page below it
+    // (the footer) does not jump up and slide back.
+    ul.style.minHeight = "";
+    ul.style.minHeight = Math.max(heightBefore.current, ul.offsetHeight) + "px";
+    const release = () => {
+      ul.style.minHeight = "";
+      refreshSoon();
+    };
     const tween = Flip.from(state, {
       duration: 1.05,
       ease: "expo.inOut",
       absolute: true,
       nested: true,
       stagger: 0.025,
+      onComplete: release,
       onEnter: (els) =>
         gsap.fromTo(els, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.9, delay: 0.25 }),
       onLeave: (els) => gsap.to(els, { autoAlpha: 0, duration: 0.3 }),
     });
     return () => {
       tween.kill();
+      release();
     };
   }, [view, filter]);
 
