@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { services } from "@/content/services";
 import { TLink } from "@/components/Transition";
-import { Cta, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Services" };
 
@@ -33,8 +33,7 @@ export default function Services() {
             </li>
           ))}
         </ul>
-      </section>
-      <Cta />
+      </section>
     </>
   );
 }

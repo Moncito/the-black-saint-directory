@@ -34,8 +34,8 @@ export default async function CaseStudy({ params }: Props) {
           {project.index} — {project.meta}
         </Label>
         <h1 className="t-h1 mt-6">
-          <span data-reveal="lines" className="inline-block max-w-[14ch] align-top">
-            {project.name}
+          <span className="rise-mask !inline-block max-w-[14ch] align-top">
+            <span className="rise-line">{project.name}</span>
           </span>
           {project.badge && <Badge>{project.badge}</Badge>}
         </h1>

@@ -4,14 +4,19 @@ import { SYMBOL } from "./state";
 /**
  * The One Line, as data.
  *
- * `public/brand/serpent-path.json` holds the logo's centreline (tail → head)
- * in the master SVG's coordinates. We sample it, prepend a long winding
- * approach that comes out of the dark, and resample the whole thing uniformly
- * by arc length into a float texture: row 0 positions, row 1 tangents.
+ * A path is a float texture, sampled uniformly by arc length: row 0 holds
+ * positions, row 1 tangents. The vertex shader slides the body along it.
  *
- * The vertex shader slides the body along it. The body is exactly as long as
- * the logo's centreline, so when the head reaches the end the serpent *is*
- * the logo.
+ * Two paths exist:
+ *
+ *   intro  `public/brand/serpent-path.json` holds the logo's centreline
+ *          (tail → head) in the master SVG's coordinates. A long winding
+ *          approach out of the dark is prepended. The body is exactly as long
+ *          as the centreline, so when the head reaches the end the serpent
+ *          *is* the logo.
+ *
+ *   hero   a closed, lazy loop through the hero's space, sized to the
+ *          viewport. The serpent travels it forever.
  */
 
 export type SerpentPath = {
@@ -41,6 +46,34 @@ const APPROACH: [number, number, number][] = [
   [-16, -95, -8],
 ];
 
+/**
+ * The hero loop as fractions of the viewport (x of width, y of height, from
+ * the centre, y up) with depth as a fraction of height. It keeps to the open
+ * right and top of the hero, drops away behind the headline, and returns.
+ */
+const LOOP_WIDE: [number, number, number][] = [
+  [0.4, 0.34, 0.02],
+  [0.2, 0.16, 0.1],
+  [0.37, -0.06, 0.12],
+  [0.22, -0.3, 0.0],
+  [-0.02, -0.38, -0.3],
+  [-0.3, -0.2, -0.75],
+  [-0.44, 0.1, -1.05],
+  [-0.2, 0.34, -0.95],
+  [0.12, 0.4, -0.5],
+];
+
+const LOOP_TALL: [number, number, number][] = [
+  [0.3, 0.4, 0.02],
+  [-0.12, 0.3, 0.08],
+  [0.26, 0.16, 0.1],
+  [-0.18, 0.04, 0.02],
+  [0.2, -0.14, -0.25],
+  [-0.3, -0.3, -0.7],
+  [-0.46, 0.05, -0.95],
+  [-0.1, 0.44, -0.6],
+];
+
 function sampleCenterline(d: string): THREE.Vector3[] {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -65,7 +98,44 @@ function sampleCenterline(d: string): THREE.Vector3[] {
   return points;
 }
 
-export async function loadSerpentPath(): Promise<SerpentPath> {
+/** Resample a polyline uniformly by arc length into the two-row texture. */
+function toTexture(points: THREE.Vector3[], closed: boolean) {
+  const cumulative = new Float32Array(points.length);
+  for (let i = 1; i < points.length; i++)
+    cumulative[i] = cumulative[i - 1] + points[i].distanceTo(points[i - 1]);
+  const total = cumulative[points.length - 1];
+
+  const positions: THREE.Vector3[] = [];
+  let j = 0;
+  for (let i = 0; i < COUNT; i++) {
+    const s = (i / (COUNT - 1)) * total;
+    while (j < points.length - 2 && cumulative[j + 1] < s) j++;
+    const span = cumulative[j + 1] - cumulative[j] || 1;
+    positions.push(points[j].clone().lerp(points[j + 1], (s - cumulative[j]) / span));
+  }
+
+  const data = new Float32Array(COUNT * 2 * 4);
+  const tangent = new THREE.Vector3();
+  const last = COUNT - 1;
+  for (let i = 0; i < COUNT; i++) {
+    const p = positions[i];
+    // On a closed loop the first and last samples coincide, so wrap past them.
+    const next = closed ? positions[i === last ? 1 : i + 1] : positions[Math.min(i + 1, last)];
+    const prev = closed ? positions[i === 0 ? last - 1 : i - 1] : positions[Math.max(i - 1, 0)];
+    tangent.subVectors(next, prev).normalize();
+    data.set([p.x, p.y, p.z, 1], i * 4);
+    data.set([tangent.x, tangent.y, tangent.z, 0], (COUNT + i) * 4);
+  }
+
+  const texture = new THREE.DataTexture(data, COUNT, 2, THREE.RGBAFormat, THREE.FloatType);
+  texture.minFilter = THREE.NearestFilter;
+  texture.magFilter = THREE.NearestFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  return { texture, total };
+}
+
+export async function loadIntroPath(): Promise<SerpentPath> {
   const json = (await fetch("/brand/serpent-path.json").then((r) => r.json())) as PathJson;
   const logo = sampleCenterline(json.centerline);
 
@@ -78,39 +148,20 @@ export async function loadSerpentPath(): Promise<SerpentPath> {
     p.z += logo[0].z * (1 - i / blend);
   }
 
-  const points = [...approach.slice(0, -1), ...logo];
-  const cumulative = new Float32Array(points.length);
-  for (let i = 1; i < points.length; i++)
-    cumulative[i] = cumulative[i - 1] + points[i].distanceTo(points[i - 1]);
-  const total = cumulative[points.length - 1];
-  const body = total - cumulative[approach.length - 1];
+  let body = 0;
+  for (let i = 1; i < logo.length; i++) body += logo[i].distanceTo(logo[i - 1]);
 
-  // Uniform resample by arc length.
-  const positions: THREE.Vector3[] = [];
-  let j = 0;
-  for (let i = 0; i < COUNT; i++) {
-    const s = (i / (COUNT - 1)) * total;
-    while (j < points.length - 2 && cumulative[j + 1] < s) j++;
-    const span = cumulative[j + 1] - cumulative[j] || 1;
-    positions.push(points[j].clone().lerp(points[j + 1], (s - cumulative[j]) / span));
-  }
+  const { texture, total } = toTexture([...approach.slice(0, -1), ...logo], false);
+  return { texture, count: COUNT, total, body };
+}
 
-  const data = new Float32Array(COUNT * 2 * 4);
-  const tangent = new THREE.Vector3();
-  for (let i = 0; i < COUNT; i++) {
-    const p = positions[i];
-    tangent
-      .subVectors(positions[Math.min(i + 1, COUNT - 1)], positions[Math.max(i - 1, 0)])
-      .normalize();
-    data.set([p.x, p.y, p.z, 1], i * 4);
-    data.set([tangent.x, tangent.y, tangent.z, 0], (COUNT + i) * 4);
-  }
-
-  const texture = new THREE.DataTexture(data, COUNT, 2, THREE.RGBAFormat, THREE.FloatType);
-  texture.minFilter = THREE.NearestFilter;
-  texture.magFilter = THREE.NearestFilter;
-  texture.generateMipmaps = false;
-  texture.needsUpdate = true;
-
+/** The hero loop for a viewport of w × h px, in logo units of `unit` px each. */
+export function buildLoopPath(w: number, h: number, unit: number, body: number): SerpentPath {
+  const shape = w >= h * 0.9 ? LOOP_WIDE : LOOP_TALL;
+  const control = shape.map(
+    ([x, y, z]) => new THREE.Vector3((x * w) / unit, (y * h) / unit, (z * h) / unit),
+  );
+  const curve = new THREE.CatmullRomCurve3(control, true, "centripetal");
+  const { texture, total } = toTexture(curve.getSpacedPoints(1400), true);
   return { texture, count: COUNT, total, body };
 }

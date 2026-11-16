@@ -1,9 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Project } from "@/content/projects";
-import { cta, startHref } from "@/content/site";
 import { TLink } from "./Transition";
-import { Magnetic } from "./Magnetic";
 
 export function Label({ children, className }: { children: ReactNode; className?: string }) {
   return <p className={`t-label text-muted ${className ?? ""}`}>{children}</p>;
@@ -22,8 +20,11 @@ export function PageHeader({
   return (
     <header className="gutter pb-16 pt-[calc(var(--spacing-nav)+12vh)] md:pb-24">
       <Label>{label}</Label>
-      <h1 data-reveal="lines" className="t-h1 mt-6 max-w-[16ch]">
-        {title}
+      {/* CSS-driven rise: the page title paints without waiting for JS. */}
+      <h1 className="t-h1 mt-6 max-w-[16ch]">
+        <span className="rise-mask">
+          <span className="rise-line">{title}</span>
+        </span>
       </h1>
       {children}
     </header>
@@ -87,26 +88,6 @@ export function ProjectCard({
         <span className="t-label text-muted pt-1.5">{project.index}</span>
       </div>
     </TLink>
-  );
-}
-
-export function Cta() {
-  return (
-    <section className="gutter py-[22vh] text-center">
-      <h2 data-reveal="lines" className="t-h1 mx-auto max-w-[14ch]">
-        {cta.heading}
-      </h2>
-      <div data-reveal="fade" className="mt-12">
-        <Magnetic strength={0.35}>
-          <TLink
-            href={startHref}
-            className="t-label inline-flex h-16 items-center gap-3 rounded-full border border-current px-9 transition-colors duration-700 ease-[var(--ease-expo)] hover:bg-white hover:text-ink"
-          >
-            {cta.action} <span aria-hidden="true">→</span>
-          </TLink>
-        </Magnetic>
-      </div>
-    </section>
   );
 }
 

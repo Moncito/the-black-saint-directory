@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getService, services } from "@/content/services";
 import { TLink } from "@/components/Transition";
-import { Cta, Label, PageHeader } from "@/components/ui";
+import { Label, PageHeader } from "@/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -51,8 +51,7 @@ export default async function ServicePage({ params }: Props) {
             </li>
           ))}
         </ul>
-      </section>
-      <Cta />
+      </section>
     </>
   );
 }

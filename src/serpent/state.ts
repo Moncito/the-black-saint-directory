@@ -87,10 +87,12 @@ export function introHeight(w: number, h: number) {
   return Math.min(h * 0.52, w * 0.9 * (SYMBOL.height / SYMBOL.width));
 }
 
-/** Where the cross rests in the hero. Returns px from the viewport centre. */
-export function heroLayout(w: number, h: number) {
-  if (w >= 900) return { x: w * 0.29, y: h * 0.04, height: h * 0.66 };
-  return { x: w * 0.17, y: h * 0.17, height: h * 0.4 };
+/**
+ * Px per logo unit for the roaming hero serpent. The body is 12 units thick,
+ * so this sets its weight on screen: about 5% of the viewport height.
+ */
+export function heroUnit(w: number, h: number) {
+  return w >= 900 ? h / 250 : h / 340;
 }
 
 export const CAMERA_FOV = 35;

@@ -13,6 +13,7 @@ const vertex = /* glsl */ `
   uniform float uWiggle;
   uniform float uTime;
   uniform float uFlat;
+  uniform float uLoop;
 
   in vec3 aOffset;
   in vec3 aNormal;
@@ -28,7 +29,9 @@ const vertex = /* glsl */ `
   out float vViewZ;
 
   vec3 fetchRow(float s, int row) {
-    float f = clamp(s / uTotal, 0.0, 1.0) * (uCount - 1.0);
+    // An open path clamps at its ends; a closed loop wraps.
+    float t = uLoop > 0.5 ? fract(s / uTotal) : clamp(s / uTotal, 0.0, 1.0);
+    float f = t * (uCount - 1.0);
     float i = floor(f);
     vec3 a = texelFetch(uPath, ivec2(int(i), row), 0).xyz;
     vec3 b = texelFetch(uPath, ivec2(int(min(i + 1.0, uCount - 1.0)), row), 0).xyz;
@@ -40,7 +43,7 @@ const vertex = /* glsl */ `
     vec3 p = fetchRow(s, 0);
     vec3 t = normalize(fetchRow(s, 1));
     vec3 side = normalize(cross(t, vec3(0.0, 0.0, 1.0)) + vec3(1e-4, 0.0, 0.0));
-    p += side * amp * sin(s * 0.043 - uTime * 5.2);
+    p += side * amp * sin(s * 0.043 - uTime * mix(5.2, 1.6, uLoop));
     p.z *= 1.0 - uFlat;
     return p;
   }
@@ -57,7 +60,7 @@ const vertex = /* glsl */ `
     vec3 N = cross(B, T);
 
     // Nothing exists before the start of the path.
-    float born = smoothstep(-2.0, 10.0, s) * mix(aTaper, 1.0, uFlat);
+    float born = mix(smoothstep(-2.0, 10.0, s), 1.0, uLoop) * mix(aTaper, 1.0, uFlat);
     float depth = 1.0 - uFlat;
 
     vec3 local = c + T * aOffset.x + B * aOffset.y * born + N * aOffset.z * born * depth;
@@ -86,6 +89,7 @@ const fragment = /* glsl */ `
   uniform float uBody;
   uniform float uCamDist;
   uniform float uUnit;
+  uniform float uFar;
 
   in vec3 vWorld;
   in vec3 vNormal;
@@ -122,32 +126,42 @@ const fragment = /* glsl */ `
     float range = uUnit * 800.0;
     float atten = uLight / (1.0 + (dist * dist) / (range * range));
 
-    float ndl = max(dot(n, l), 0.0);
+    float ndl = dot(n, l);
     float ndh = max(dot(n, h), 0.0);
     float ndv = max(dot(n, v), 0.0);
-    float fresnel = pow(1.0 - ndv, 3.0);
+    float fresnel = pow(1.0 - ndv, 4.0);
+    // Wrapped falloff: the candle's light rolls around the body instead of cutting off.
+    float wrap = smoothstep(-0.45, 1.0, ndl);
 
-    // Obsidian: almost no diffuse, a tight highlight, a wider sheen.
-    vec3 color = vec3(0.012);
-    color += CANDLE * ndl * 0.05 * atten;
-    color += CANDLE * (pow(ndh, 220.0) * 2.2 + pow(ndh, 28.0) * 0.26) * gloss * atten;
-    // Lit along its edges by the candle.
-    color += CANDLE * fresnel * (0.25 + 0.75 * smoothstep(-0.3, 0.7, dot(n, l))) * 0.5 * atten;
-    // A faint cool studio strip overhead so the form reads even in shadow.
+    // Obsidian. Near-black body, a broad warm sheen, a tight hot core.
+    vec3 color = vec3(0.016, 0.016, 0.017);
+    color += CANDLE * wrap * wrap * 0.07 * atten;
+    color += CANDLE * pow(ndh, 18.0) * 0.16 * gloss * atten;
+    color += mix(CANDLE, vec3(1.0), 0.35) * pow(ndh, 140.0) * 1.15 * gloss * atten;
+    // Lit along its edges by the candle — only on the side that faces it.
+    color += CANDLE * fresnel * wrap * 0.42 * atten;
+    // A cool, very quiet key from above keeps the form readable in shadow.
     vec3 r = reflect(-v, n);
-    color += vec3(0.82, 0.88, 1.0) * pow(max(r.y, 0.0), 5.0) * 0.07 * gloss;
-    color += vec3(1.0) * fresnel * 0.035;
+    float sky = smoothstep(0.1, 1.0, r.y);
+    color += vec3(0.78, 0.84, 1.0) * sky * sky * 0.05 * gloss;
 
     // Emerging from the dark: fade with distance beyond the logo plane.
-    float far = max(vViewZ - uCamDist, 0.0) / (uUnit * 1300.0);
+    float far = max(vViewZ - uCamDist, 0.0) / (uUnit * uFar);
     color = mix(INK, color, exp(-far * far * 2.2));
 
-    // Obsidian → flat white, as a wave running head → tail with a soft flash.
-    float front = uWhite * 1.25 - (1.0 - vU);
-    float white = smoothstep(0.0, 0.2, front) * step(0.001, uWhite);
-    float flash = exp(-pow(front / 0.09, 2.0)) * step(0.001, uWhite) * (1.0 - uFlat * 0.5);
-    color = mix(color, vec3(1.0), max(white, smoothstep(0.92, 1.0, uFlat)));
-    color += CANDLE * flash * 0.9;
+    // Obsidian → flat white: a warm front runs head → tail, cooling to white behind it.
+    float front = uWhite * 1.4 - (1.0 - vU);
+    float on = step(0.001, uWhite);
+    float white = smoothstep(0.0, 0.34, front) * on;
+    float glow = exp(-pow((front - 0.06) / 0.16, 2.0)) * on * (1.0 - uFlat * 0.4);
+    vec3 lit = mix(color + CANDLE * 0.5, vec3(1.0), smoothstep(0.1, 0.34, front));
+    color = mix(color, lit, max(white, smoothstep(0.9, 1.0, uFlat)));
+    color += CANDLE * glow * 0.55;
+
+    // Dither: the body is all low-contrast gradient.
+    float dn = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453)
+      + fract(sin(dot(gl_FragCoord.yx, vec2(39.346, 11.135))) * 24634.6345) - 1.0;
+    color = max(color + dn * (1.0 / 255.0) * (1.0 - white), 0.0);
 
     outColor = vec4(min(color, vec3(1.0)) * uFade, uFade);
   }
@@ -174,6 +188,8 @@ export function createSerpentMaterial(path: SerpentPath, scales: boolean) {
       uLightPos: { value: new THREE.Vector3() },
       uCamDist: { value: 1000 },
       uUnit: { value: 1 },
+      uFar: { value: 1300 },
+      uLoop: { value: 0 },
     },
     side: THREE.DoubleSide,
     transparent: true,

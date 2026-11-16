@@ -5,9 +5,9 @@ import { useStore } from "@/lib/store";
 import { orbit } from "@/serpent/state";
 
 /**
- * The hero's hit area for the 3D serpent cross: drag to orbit, with inertia
- * on release. The cross itself lives in the shared canvas behind the page.
- * On the Static tier there is no canvas, so the symbol file stands in.
+ * The hero's hit area for the roaming serpent: drag to orbit its coil, with
+ * inertia on release. The serpent itself lives in the shared canvas behind
+ * the page.
  */
 export function HeroStage() {
   const tier = useStore((s) => s.tier);
@@ -72,14 +72,8 @@ export function HeroStage() {
     };
   }, [tier, reducedMotion]);
 
-  if (tier === "static") {
-    return (
-      <div aria-hidden="true" className="hero-stage hero-stage--static">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/logos/svg/bsd-symbol-white.svg" alt="" className="h-full w-auto" />
-      </div>
-    );
-  }
+  // No canvas on the Static tier: the hero is type and atmosphere only.
+  if (tier === "static") return null;
 
   return (
     <div

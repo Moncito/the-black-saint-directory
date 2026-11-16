@@ -163,7 +163,7 @@ html.lenis body {
   height: 200%;
   pointer-events: none;
   z-index: 60;
-  opacity: 0.045;
+  opacity: 0.06;
   will-change: transform;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   animation: grain 1.2s steps(6) infinite;
@@ -263,9 +263,8 @@ html.motion-ok [data-reveal] {
 .rise-mask {
   display: block;
   overflow: clip;
-  overflow-clip-margin: 0.12em;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
 }
 .rise-line {
   display: block;
@@ -328,6 +327,10 @@ a:hover .link-line {
 }
 .scene-live {
   animation: scene-in 2.4s var(--ease-expo) both;
+}
+/* The live scene paints its own dithered grade; the CSS one is for Static only. */
+.scene-fallback:has(+ .scene-live) {
+  display: none;
 }
 @keyframes scene-in {
   from { opacity: 0; }
@@ -474,15 +477,114 @@ html.intro-reveal [data-nav-logo] {
   -webkit-user-select: none;
   user-select: none;
 }
-.hero-stage--static {
-  inset: 16% 8% 46% auto;
-  pointer-events: none;
-}
 @media (min-width: 900px) {
   .hero-stage {
     inset: var(--spacing-nav) 0 12% 50%;
   }
-  .hero-stage--static {
-    inset: 16% 18% 22% auto;
+}
+
+/* ---------- Footer call to action: a dark, living box ---------- */
+.cta-box {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: clamp(16px, 2vw, 28px);
+  background: var(--color-ink);
+  color: #fff;
+  text-align: center;
+}
+.cta-box__content {
+  position: relative;
+  padding: clamp(72px, 13vw, 190px) var(--spacing-gutter);
+}
+.cta-box__heading {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(40px, 6.4vw, 104px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  max-width: 13ch;
+  margin-inline: auto;
+}
+.cta-box__stage {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+/* Slow drifting light. Wide, soft falloffs; the grain on top dithers them. */
+.cta-box__light {
+  position: absolute;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06) 45%, transparent 100%);
+  will-change: transform;
+}
+.cta-box__light--a {
+  left: -22%;
+  top: -55%;
+  animation: cta-drift-a 26s ease-in-out infinite alternate;
+}
+.cta-box__light--b {
+  right: -26%;
+  bottom: -70%;
+  width: 85%;
+  animation: cta-drift-b 34s ease-in-out infinite alternate;
+}
+.cta-box__light--c {
+  left: 30%;
+  top: 10%;
+  width: 46%;
+  opacity: 0.55;
+  animation: cta-drift-c 41s ease-in-out infinite alternate;
+}
+@keyframes cta-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(38%, 30%, 0) scale(1.25); }
+}
+@keyframes cta-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to { transform: translate3d(-42%, -34%, 0) scale(0.85); }
+}
+@keyframes cta-drift-c {
+  from { transform: translate3d(-40%, 30%, 0) scale(0.8); }
+  to { transform: translate3d(45%, -25%, 0) scale(1.2); }
+}
+/* The One Line: a faint trail, and the serpent travelling along it forever. */
+.cta-box__line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cta-box__trail {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+}
+.cta-box__serpent {
+  stroke: #fff;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 0.22 0.78;
+  stroke-dashoffset: 1;
+  opacity: 0.85;
+  animation: cta-serpent 16s linear infinite;
+}
+@keyframes cta-serpent {
+  to { stroke-dashoffset: 0; }
+}
+.cta-box__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-box__light,
+  .cta-box__serpent {
+    animation: none;
+  }
+  .cta-box__serpent {
+    stroke-dashoffset: 0.45;
   }
 }

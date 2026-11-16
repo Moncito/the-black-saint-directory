@@ -36,7 +36,8 @@ export function Motion() {
     const build = () => {
       if (cancelled) return;
       ctx = gsap.context(() => {
-        const scope = document.querySelector("main") ?? document.body;
+        // Main and the footer (the closing call to action lives there).
+        const scope = document.body;
         const trigger = (el: Element) => ({ trigger: el, start: "top 88%", once: true });
 
         scope.querySelectorAll<HTMLElement>('[data-reveal="lines"]').forEach((el) => {
@@ -48,6 +49,9 @@ export function Motion() {
             aria: "none",
             onSplit: (self) => {
               gsap.set(el, { visibility: "visible" });
+              // Tight leading would crop descenders (g, y, p) at the mask edge:
+              // give each mask room below and pull the next line back up.
+              gsap.set(self.masks, { paddingBottom: "0.22em", marginBottom: "-0.22em" });
               return gsap.from(self.lines, {
                 yPercent: 112,
                 duration: 1.3,

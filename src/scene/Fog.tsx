@@ -69,9 +69,18 @@ const fragment = /* glsl */ `
     vec2 d = (vUv - uLight) * vec2(uAspect, 1.0);
     float r2 = dot(d, d);
     float lit = uLit * exp(-r2 * 6.0);
-    float core = uCore * (exp(-r2 * 26000.0) * 0.9 + exp(-r2 * 900.0) * 0.16 + exp(-r2 * 40.0) * 0.035);
+    float core = uCore * (exp(-r2 * 26000.0) * 0.9 + exp(-r2 * 1400.0) * 0.14 + exp(-r2 * 120.0) * 0.03 + exp(-r2 * 9.0) * 0.012);
 
-    vec3 color = vec3(fog) + CANDLE * (fog * lit * 3.2 + lit * 0.012 * uIntensity + core);
+    // A soft floor glow and a gentle vignette: the grade, not an effect.
+    vec2 c = (vUv - vec2(0.62, -0.08)) * vec2(uAspect * 0.75, 1.35);
+    float floorGlow = exp(-dot(c, c) * 2.4) * 0.05 * uIntensity;
+
+    vec3 color = vec3(fog + floorGlow) + CANDLE * (fog * lit * 3.2 + lit * 0.014 * uIntensity + core);
+
+    // Triangular dither: dark gradients in 8 bits band badly without it.
+    float n = hash(gl_FragCoord.xy + fract(uTime) * 61.0) + hash(gl_FragCoord.yx * 1.37 + fract(uTime) * 17.0) - 1.0;
+    color = max(color + n * (1.5 / 255.0), 0.0);
+
     float alpha = min(max(color.r, max(color.g, color.b)), 1.0);
     gl_FragColor = vec4(color, alpha);
   }

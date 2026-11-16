@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { stations } from "@/content/process";
-import { Cta, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Process" };
 
@@ -26,8 +26,7 @@ export default function Process() {
             </li>
           ))}
         </ol>
-      </section>
-      <Cta />
+      </section>
     </>
   );
 }

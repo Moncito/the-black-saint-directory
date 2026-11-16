@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { saints } from "@/content/team";
 import { values } from "@/content/site";
-import { Cta, ExternalLink, Label, PageHeader, SectionHead } from "@/components/ui";
+import { ExternalLink, Label, PageHeader, SectionHead } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Studio" };
 
@@ -53,8 +53,7 @@ export default function Studio() {
             </li>
           ))}
         </ul>
-      </section>
-      <Cta />
+      </section>
     </>
   );
 }

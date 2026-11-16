@@ -111,8 +111,10 @@ export function Intro() {
 
   const engineOk =
     reducedMotion || timedOut || (tier === "static" ? video !== "pending" : tier !== null && sceneReady);
+  // The timeout only ends a stalled load; once the scene is ready the serpent
+  // always plays, however long the visitor waits at the gate.
   const mode: Mode =
-    reducedMotion || timedOut || tier === null
+    reducedMotion || tier === null
       ? "fade"
       : tier === "static"
         ? video === "ok"

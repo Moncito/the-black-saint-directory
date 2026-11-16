@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { projects } from "@/content/projects";
-import { Cta, PageHeader, ProjectCard } from "@/components/ui";
+import { PageHeader, ProjectCard } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Work" };
 
@@ -15,8 +15,7 @@ export default function Work() {
             <ProjectCard key={project.slug} project={project} priority={i < 2} />
           ))}
         </div>
-      </section>
-      <Cta />
+      </section>
     </>
   );
 }

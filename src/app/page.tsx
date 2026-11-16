@@ -6,14 +6,14 @@ import { projects } from "@/content/projects";
 import { TLink } from "@/components/Transition";
 import { ManilaClock } from "@/components/ManilaClock";
 import { HeroStage } from "@/components/HeroStage";
-import { Cta, ProjectCard, SectionHead } from "@/components/ui";
+import { ProjectCard, SectionHead } from "@/components/ui";
 
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
 
 export default function Home() {
   return (
     <>
-      {/* 1 — Hero. The serpent cross is live 3D in the shared canvas behind. */}
+      {/* 1 — Hero. The serpent roams the shared 3D canvas behind the type. */}
       <section className="gutter relative flex min-h-[100svh] flex-col justify-end pb-6 pt-[var(--spacing-nav)]">
         <HeroStage />
         <h1 className="t-hero pointer-events-none relative max-w-[9.5em] pb-[6vh]">
@@ -105,9 +105,6 @@ export default function Home() {
       </section>
 
       {/* 7 — Testimonials: hidden until we have real ones. */}
-
-      {/* 8 — CTA */}
-      <Cta />
     </>
   );
 }
