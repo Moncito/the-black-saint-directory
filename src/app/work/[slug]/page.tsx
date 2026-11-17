@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getNextProject, getProject, projects } from "@/content/projects";
@@ -15,10 +16,14 @@ export const generateStaticParams = () => projects.map((p) => ({ slug: p.slug })
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = getProject((await params).slug);
   if (!project) return {};
-  return {
-    title: project.badge ? `${project.name} (${project.badge})` : project.name,
+  const name = project.badge ? `${project.name} (${project.badge})` : project.name;
+  return pageMeta({
+    title: name,
     description: project.summary ?? project.sections[0]?.text,
-  };
+    path: `/work/${project.slug}`,
+    image: `/og/${project.slug}.jpg`,
+    imageAlt: `${name} — ${project.meta}`,
+  });
 }
 
 export default async function CaseStudy({ params }: Props) {
@@ -50,7 +55,9 @@ export default async function CaseStudy({ params }: Props) {
             width={2400}
             height={1500}
             sizes="100vw"
-            priority
+            preload
+            fetchPriority="high"
+            loading="eager"
             className="h-auto w-full"
           />
         </div>

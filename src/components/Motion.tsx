@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger, SplitText, EASE } from "@/lib/gsap";
 import { useStore } from "@/lib/store";
-import { refreshSoon } from "@/lib/useScrollScene";
 
 /**
  * Site-wide reveal system. Mark elements in server components:
@@ -15,34 +14,18 @@ import { refreshSoon } from "@/lib/useScrollScene";
  *
  * Everything triggers once as it scrolls into view. With reduced motion (or
  * if JS never arrives) the content is simply visible.
+ *
+ * On the first page load, whatever is already on screen is left alone: it
+ * paints with the HTML instead of waiting for JS, which keeps the largest
+ * paint fast. After a route change the transition cover hides the new page,
+ * so everything can animate in.
  */
+
+let firstLoad = true;
 export function Motion() {
   const pathname = usePathname();
   const reducedMotion = useStore((s) => s.reducedMotion);
   const introDone = useStore((s) => s.introDone);
-
-  // Anything that changes the page's height after load — a filter, a view
-  // switch, an image arriving — moves every section below it. Re-measure, so
-  // scroll-linked work never runs against stale positions.
-  useEffect(() => {
-    if (reducedMotion || !introDone) return;
-    let last = document.documentElement.scrollHeight;
-    const onRefresh = () => {
-      last = document.documentElement.scrollHeight;
-    };
-    const observer = new ResizeObserver(() => {
-      const next = document.documentElement.scrollHeight;
-      if (Math.abs(next - last) < 8) return;
-      last = next;
-      refreshSoon();
-    });
-    observer.observe(document.body);
-    ScrollTrigger.addEventListener("refresh", onRefresh);
-    return () => {
-      observer.disconnect();
-      ScrollTrigger.removeEventListener("refresh", onRefresh);
-    };
-  }, [reducedMotion, introDone]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -63,8 +46,16 @@ export function Motion() {
         // Main and the footer (the closing call to action lives there).
         const scope = document.body;
         const trigger = (el: Element) => ({ trigger: el, start: "top 88%", once: true });
+        const skip = (el: HTMLElement) => {
+          if (!firstLoad) return false;
+          const r = el.getBoundingClientRect();
+          if (r.top >= window.innerHeight || r.bottom <= 0) return false;
+          gsap.set(el, { visibility: "visible" });
+          return true;
+        };
 
         scope.querySelectorAll<HTMLElement>('[data-reveal="lines"]').forEach((el) => {
+          if (skip(el)) return;
           SplitText.create(el, {
             type: "lines",
             mask: "lines",
@@ -88,6 +79,7 @@ export function Motion() {
         });
 
         scope.querySelectorAll<HTMLElement>('[data-reveal="fade"]').forEach((el) => {
+          if (skip(el)) return;
           gsap.set(el, { visibility: "visible" });
           gsap.from(el, {
             y: 28,
@@ -99,6 +91,7 @@ export function Motion() {
         });
 
         scope.querySelectorAll<HTMLElement>('[data-reveal="rule"]').forEach((el) => {
+          if (skip(el)) return;
           gsap.set(el, { visibility: "visible", transformOrigin: "left center" });
           gsap.from(el, {
             scaleX: 0,
@@ -109,7 +102,9 @@ export function Motion() {
         });
       });
       ScrollTrigger.refresh();
-      root.classList.add("motion-ready");
+      firstLoad = false;
+      // From now on, new pages hide their reveals until they are built.
+      root.classList.add("motion-ready", "motion-nav");
     };
 
     // Split after fonts settle so line breaks are the real ones.

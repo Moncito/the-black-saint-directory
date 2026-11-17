@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "capture:intro": "node scripts/capture-intro.mjs"
+    "capture:intro": "node scripts/capture-intro.mjs",
+    "og": "node scripts/og-images.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

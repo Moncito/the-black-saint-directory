@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getService, services } from "@/content/services";
@@ -17,7 +18,13 @@ export const generateStaticParams = () => services.map((s) => ({ slug: s.slug })
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = getService((await params).slug);
-  return service ? { title: service.name, description: service.description } : {};
+  return service
+    ? pageMeta({
+        title: service.name,
+        description: service.description,
+        path: `/services/${service.slug}`,
+      })
+    : {};
 }
 
 /** Every service page proves itself with something you can touch. */

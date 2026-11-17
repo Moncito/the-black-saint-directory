@@ -17,7 +17,8 @@ export function SaintCard({ saint, index }: { saint: Saint; index: number }) {
   const id = `saint-${saint.slug}`;
 
   return (
-    <article className="saint" data-reveal="fade">
+    // Not reveal-gated: the first portrait is the page's largest paint.
+    <article className="saint">
       <div className="saint__scene">
         <div className="saint__card" data-flipped={flipped || undefined}>
           <div className="saint__face saint__front" aria-hidden={flipped}>
@@ -27,7 +28,9 @@ export function SaintCard({ saint, index }: { saint: Saint; index: number }) {
                 alt={`${saint.name}, ${saint.role}`}
                 fill
                 sizes="(min-width: 768px) 46vw, 92vw"
-                priority={index === 0}
+                preload={index === 0}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                loading={index === 0 ? "eager" : "lazy"}
               />
             </div>
           </div>

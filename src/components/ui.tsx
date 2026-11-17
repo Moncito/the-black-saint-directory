@@ -36,8 +36,9 @@ export function SectionHead({ index, label }: { index: string; label: string }) 
     <div className="mb-12 md:mb-20">
       <div data-reveal="rule" className="h-px w-full bg-current opacity-20" />
       <div className="t-label text-muted mt-4 flex justify-between">
-        <span>{label}</span>
-        <span>{index}</span>
+        {/* A real heading, so every section has a place in the outline. */}
+        <h2>{label}</h2>
+        <span aria-hidden="true">{index}</span>
       </div>
     </div>
   );
@@ -73,7 +74,9 @@ export function ProjectCard({
           width={2400}
           height={1500}
           sizes="(min-width: 768px) 50vw, 100vw"
-          priority={priority}
+          preload={priority}
+          fetchPriority={priority ? "high" : "auto"}
+          loading={priority ? "eager" : "lazy"}
           className="work-image h-auto w-full group-hover:scale-[1.03] group-focus-visible:scale-[1.03]"
         />
       </div>

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { stations } from "@/content/process";
 import { PageHeader } from "@/components/ui";
 
-export const metadata: Metadata = { title: "Process" };
+export const metadata: Metadata = pageMeta({ title: "Process", path: "/process" });
 
 /** Phase 1 skeleton. Timelines, deliverables and the weaving line come later. */
 export default function Process() {
@@ -26,7 +27,7 @@ export default function Process() {
             </li>
           ))}
         </ol>
-      </section>
+      </section>
     </>
   );
 }

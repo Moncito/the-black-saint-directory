@@ -4,7 +4,7 @@ import { TLink } from "@/components/Transition";
 import { Label } from "@/components/ui";
 import { SnakeGame } from "@/components/SnakeGame";
 
-export const metadata: Metadata = { title: "404" };
+export const metadata: Metadata = { title: "404", robots: { index: false } };
 
 export default function NotFound() {
   return (

@@ -8,6 +8,8 @@ import { Footer } from "@/components/Footer";
 import { FooterLift } from "@/components/FooterLift";
 import { Intro } from "@/components/Intro";
 import { SceneRoot } from "@/scene/SceneRoot";
+import { pageMeta, siteUrl } from "@/lib/seo";
+import { saints } from "@/content/team";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -31,8 +33,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  ...pageMeta({ path: "/" }),
+  metadataBase: new URL(siteUrl),
   title: { default: site.name, template: `%s — ${site.name}` },
-  description: site.description,
+  applicationName: site.name,
   icons: {
     icon: [
       {
@@ -46,7 +50,27 @@ export const metadata: Metadata = {
         media: "(prefers-color-scheme: light)",
       },
     ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
+};
+
+/** Structured data for search: who the studio is, where, and who runs it. */
+const organization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: site.name,
+  url: siteUrl,
+  logo: `${siteUrl}/brand/logos/png/bsd-primary-ink.png`,
+  description: site.description,
+  slogan: "Every person is a saint of their own life.",
+  foundingDate: "2026",
+  address: { "@type": "PostalAddress", addressLocality: "Manila", addressCountry: "PH" },
+  founder: saints.map((s) => ({
+    "@type": "Person",
+    name: s.name,
+    jobTitle: s.role,
+    sameAs: s.links.map((l) => l.href),
+  })),
 };
 
 export const viewport: Viewport = {
@@ -91,6 +115,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </FooterLift>
         </Providers>
         <div aria-hidden="true" className="grain" />
+        <script
+          type="application/ld+json"
+          // Built only from our own content files, never from visitor input.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
+        />
       </body>
     </html>
   );

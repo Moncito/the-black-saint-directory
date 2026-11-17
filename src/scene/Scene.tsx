@@ -3,11 +3,9 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Canvas, advance, useThree } from "@react-three/fiber";
-import { PerformanceMonitor } from "@react-three/drei";
 import { useStore } from "@/lib/store";
 import { tierSettings } from "@/lib/tier";
 import { CAMERA_FOV, isCapture } from "@/serpent/state";
-import { Fog } from "./Fog";
 import { Serpent } from "./Serpent";
 
 /** With reduced motion the scene renders single still frames on demand. */
@@ -29,24 +27,23 @@ function Still({ deps }: { deps: unknown }) {
 /** Capture mode: frames are stepped by scripts/capture-intro.mjs, not the clock. */
 function CaptureBridge() {
   useEffect(() => {
-    (window as unknown as { __bsdRender?: (ms: number) => void }).__bsdRender = (ms) =>
+    (window as unknown as { __bsdRender?: (ms: number) => void }).__bsdRender = (ms) => {
       advance(ms, true);
+      // The fog lives on its own canvas; step it in the same frame.
+      window.dispatchEvent(new CustomEvent("bsd:capture-frame", { detail: ms }));
+    };
   }, []);
   return null;
 }
 
 /**
- * The one WebGL canvas. It mounts once in the root layout and survives every
- * route change, so the serpent travels between pages without re-initialising.
- * Routes only change what the scene is asked to show.
+ * The intro's 3D scene: the serpent alone. It mounts only while the intro
+ * plays (see SceneRoot); the fog and candle live on their own light canvas.
  */
 export default function Scene({ tier }: { tier: "full" | "lite" }) {
   const pathname = usePathname();
   const reducedMotion = useStore((s) => s.reducedMotion);
-  const introDone = useStore((s) => s.introDone);
-  const downgrade = useStore((s) => s.downgrade);
   const settings = tierSettings[tier];
-  const intensity = pathname === "/" ? 1 : 0.55;
   const capture = isCapture();
 
   return (
@@ -64,13 +61,8 @@ export default function Scene({ tier }: { tier: "full" | "lite" }) {
       eventSource={typeof document !== "undefined" ? document.body : undefined}
       eventPrefix="client"
     >
-      {/* Sustained low frame rate steps the device down a tier — never mid-intro. */}
-      {!reducedMotion && !capture && introDone && (
-        <PerformanceMonitor bounds={() => [40, 120]} flipflops={2} onDecline={downgrade} />
-      )}
       {reducedMotion && <Still deps={pathname} />}
       {capture && <CaptureBridge />}
-      <Fog octaves={settings.fogOctaves} intensity={intensity} />
       <Serpent
         segments={settings.serpentSegments}
         radial={settings.serpentRadial}

@@ -41,10 +41,14 @@ export function ServicesHalo() {
           x: Math.sin(a) * rx,
           y: -depth * rz * 0.34,
           scale: 0.5 + front * 0.5,
-          opacity: 0.16 + sharp * 0.84,
+          // 36% is the dimmest a name gets and still reads as large text (3:1).
+          opacity: 0.36 + sharp * 0.64,
           filter: `blur(${((1 - sharp) * 5).toFixed(2)}px)`,
           zIndex: Math.round(front * 10),
         });
+        // The small index only shows on the front name.
+        const index = item.querySelector<HTMLElement>(".halo__index");
+        if (index) index.style.opacity = String(Math.max(0, (sharp - 0.75) * 4));
         item.style.pointerEvents = front > 0.6 ? "auto" : "none";
         item.tabIndex = front > 0.6 ? 0 : -1;
       });

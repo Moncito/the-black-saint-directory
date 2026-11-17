@@ -188,8 +188,9 @@ a:focus-visible .work-image,
   filter: grayscale(0);
 }
 
-/* Reveal primitives start hidden only when JS + motion are available. */
-html.motion-ok [data-reveal] {
+/* Reveal primitives start hidden only after the first page has loaded with
+   motion available (see Motion.tsx): first-load content paints with the HTML. */
+html.motion-ok.motion-nav [data-reveal] {
   visibility: hidden;
 }
 
@@ -1072,6 +1073,19 @@ html.intro-reveal [data-nav-logo] {
     grid-template-columns: 1.2fr 1fr;
   }
 }
+/* Phones: no keyboard, and a fixed button would sit over the text. In flow. */
+@media (max-width: 767px) {
+  .case__toggle {
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin: 0 var(--spacing-gutter) 48px;
+    mix-blend-mode: normal !important;
+  }
+  .case__toggle kbd {
+    display: none !important;
+  }
+}
 .case__toggle {
   position: fixed;
   left: var(--spacing-gutter);
@@ -1596,6 +1610,9 @@ html.intro-reveal [data-nav-logo] {
   height: 34px;
   padding: 0 14px;
 }
+.quote__result .quote-options {
+  flex-wrap: nowrap;
+}
 .quote__range {
   margin-top: 18px;
   font-family: var(--font-display);
@@ -1657,6 +1674,8 @@ html.intro-reveal [data-nav-logo] {
 .quote-input :is(input, textarea):focus {
   outline: none;
   border-color: #fff;
+  /* A 2px line, so focus is unmistakable without an outline box. */
+  box-shadow: 0 1px 0 0 #fff;
 }
 .quote-trap {
   position: absolute;

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { services } from "@/content/services";
 import { TLink } from "@/components/Transition";
 import { PageHeader } from "@/components/ui";
 
-export const metadata: Metadata = { title: "Services" };
+export const metadata: Metadata = pageMeta({ title: "Services", path: "/services" });
 
 export default function Services() {
   return (
@@ -33,7 +34,7 @@ export default function Services() {
             </li>
           ))}
         </ul>
-      </section>
+      </section>
     </>
   );
 }

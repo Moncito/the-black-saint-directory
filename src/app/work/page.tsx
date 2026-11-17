@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { projects } from "@/content/projects";
 import { PageHeader } from "@/components/ui";
 import { WorkIndex } from "@/components/work/WorkIndex";
 
-export const metadata: Metadata = { title: "Work" };
+export const metadata: Metadata = pageMeta({ title: "Work", path: "/work" });
 
 export default function Work() {
   return (

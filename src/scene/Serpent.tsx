@@ -11,11 +11,9 @@ import {
   CAMERA_FOV,
   SYMBOL,
   listenPointer,
-  pointer,
   serpent,
 } from "@/serpent/state";
 
-const damp = THREE.MathUtils.damp;
 const ortho = new THREE.Matrix4();
 
 /**
@@ -60,8 +58,7 @@ function useStage() {
 
 /**
  * The serpent exists for the intro: it slithers in and folds into the logo,
- * which then flies to the nav. After that the mesh rests and only its candle
- * stays — the cursor light that rakes across the fog on every page.
+ * which then flies to the nav. The scene unmounts after that.
  */
 export function Serpent({
   segments,
@@ -72,7 +69,6 @@ export function Serpent({
   radial: number;
   scales: boolean;
 }) {
-  const reducedMotion = useStore((s) => s.reducedMotion);
   const setSceneReady = useStore((s) => s.setSceneReady);
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
@@ -124,28 +120,11 @@ export function Serpent({
   useFrame((state, delta) => {
     const m = mesh.current;
     if (!m || !material) return;
-    const dt = Math.min(delta, 0.1);
     const u = material.uniforms;
-    const { width: w, height: h } = size;
 
-    if (serpent.mode === "hero") {
-      // Candle: the cursor, or a slow drift where there is no cursor.
-      serpent.fade = 0;
-      if (reducedMotion) {
-        serpent.lightX = w * 0.24;
-        serpent.lightY = h * 0.18;
-      } else {
-        serpent.time += dt;
-        const t = serpent.time;
-        const lx = pointer.active ? pointer.x : w * 0.2 + Math.sin(t * 0.37) * w * 0.22;
-        const ly = pointer.active ? pointer.y : h * 0.1 + Math.cos(t * 0.29) * h * 0.2;
-        serpent.lightX = damp(serpent.lightX, lx, 5, dt);
-        serpent.lightY = damp(serpent.lightY, ly, 5, dt);
-      }
-      serpent.core = damp(serpent.core, pointer.fine ? 0.2 : 0.5, 2, dt);
-      serpent.light = damp(serpent.light, 1.7, 2, dt);
-      serpent.fog = damp(serpent.fog, 1, 1.2, dt);
-    }
+    // Once the logo has flown to the nav the serpent rests; the fog canvas
+    // keeps the candle.
+    if (serpent.mode === "hero") serpent.fade = 0;
 
     const scale = (serpent.height / SYMBOL.height) * serpent.zoom;
     m.visible = serpent.fade > 0.003 && scale > 0;

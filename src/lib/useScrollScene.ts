@@ -34,7 +34,8 @@ export function refreshSoon() {
  */
 export function useScrollScene(
   scope: RefObject<HTMLElement | null>,
-  build: (root: HTMLElement) => void,
+  /** May return a cleanup; GSAP runs it when the context is reverted. */
+  build: (root: HTMLElement) => void | (() => void),
   deps: DependencyList = [],
 ) {
   const introDone = useStore((s) => s.introDone);

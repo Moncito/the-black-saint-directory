@@ -37,7 +37,7 @@ export function WorkGallery() {
       });
     };
 
-    gsap.to(track, {
+    const tween = gsap.to(track, {
       x: () => -distance(),
       ease: "none",
       scrollTrigger: {
@@ -57,6 +57,19 @@ export function WorkGallery() {
         onRefresh: light,
       },
     });
+
+    // Keyboard: a focused card off to the side is scrolled to the centre.
+    // The track moves 1px for every 1px of page scroll, so the maths is direct.
+    const onFocus = (e: FocusEvent) => {
+      const card = (e.target as Element).closest<HTMLElement>(".gallery__card");
+      const st = tween.scrollTrigger;
+      if (!card || !st) return;
+      const offset = card.offsetLeft - (window.innerWidth - card.offsetWidth) / 2;
+      const top = st.start + gsap.utils.clamp(0, distance(), offset);
+      window.scrollTo({ top, behavior: "instant" });
+    };
+    el.addEventListener("focusin", onFocus);
+    return () => el.removeEventListener("focusin", onFocus);
   });
 
   return (

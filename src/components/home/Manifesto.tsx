@@ -32,7 +32,8 @@ export function Manifesto() {
         invalidateOnRefresh: true,
       },
     });
-    tl.fromTo(all, { opacity: 0.15 }, { opacity: 1, duration: 1, stagger: 1 }, 0);
+    // 36% is the dimmest the words go and still read as large text (3:1).
+    tl.fromTo(all, { opacity: 0.36 }, { opacity: 1, duration: 1, stagger: 1 }, 0);
     all.forEach((node, i) => {
       const line = node.querySelector(".mw__line");
       if (line)

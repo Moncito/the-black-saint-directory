@@ -165,7 +165,9 @@ export function WorkIndex() {
                     width={2400}
                     height={1500}
                     sizes="(min-width: 768px) 50vw, 100vw"
-                    priority={i < 2}
+                    preload={i < 2}
+                    fetchPriority={i < 2 ? "high" : "auto"}
+                    loading={i < 2 ? "eager" : "lazy"}
                     className="work-image h-auto w-full group-hover:scale-[1.03]"
                   />
                 </div>

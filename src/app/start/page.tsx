@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { carePlans, formatPhp, rules } from "@/content/pricing";
-import { cta } from "@/content/site";
+import { cta, site } from "@/content/site";
 import { PageHeader, SectionHead } from "@/components/ui";
 import { QuoteBuilder } from "@/components/start/QuoteBuilder";
 
-export const metadata: Metadata = { title: cta.action };
+export const metadata: Metadata = pageMeta({
+  title: cta.action,
+  description: `${site.description} ${rules.note}`,
+  path: "/start",
+});
 
 export default function Start() {
   return (
