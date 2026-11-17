@@ -10,6 +10,7 @@ import { Intro } from "@/components/Intro";
 import { SceneRoot } from "@/scene/SceneRoot";
 import { pageMeta, siteUrl } from "@/lib/seo";
 import { saints } from "@/content/team";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -115,6 +116,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </FooterLift>
         </Providers>
         <div aria-hidden="true" className="grain" />
+        {/* Cookieless, privacy-friendly. Collects only once enabled in the Vercel project. */}
+        <Analytics />
         <script
           type="application/ld+json"
           // Built only from our own content files, never from visitor input.
