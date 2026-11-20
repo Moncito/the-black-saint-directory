@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { graph, breadcrumbs, people } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import { saints } from "@/content/team";
 import { values } from "@/content/site";
 import { PageHeader } from "@/components/ui";
 import { SaintCard } from "@/components/studio/SaintCard";
 
-export const metadata: Metadata = pageMeta({ title: "Studio", path: "/studio" });
+export const metadata: Metadata = pageMeta({ ...seo.studio, path: "/studio" });
 
 export default function Studio() {
   return (

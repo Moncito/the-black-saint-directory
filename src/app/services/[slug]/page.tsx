@@ -4,6 +4,7 @@ import { graph, breadcrumbs, serviceNode, packagesFor } from "@/lib/schema";
 import { formatRange, rules } from "@/content/pricing";
 import { cta, startHref } from "@/content/site";
 import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getService, services } from "@/content/services";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = getService((await params).slug);
   return service
     ? pageMeta({
-        title: service.name,
+        title: seo.service[service.slug] ?? service.name,
         description: service.description,
         path: `/services/${service.slug}`,
       })

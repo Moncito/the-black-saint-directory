@@ -2,16 +2,13 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { graph, breadcrumbs } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import { carePlans, formatPhp, rules } from "@/content/pricing";
-import { cta, site } from "@/content/site";
+import { cta } from "@/content/site";
 import { PageHeader, SectionHead } from "@/components/ui";
 import { QuoteBuilder } from "@/components/start/QuoteBuilder";
 
-export const metadata: Metadata = pageMeta({
-  title: cta.action,
-  description: `${site.description} ${rules.note}`,
-  path: "/start",
-});
+export const metadata: Metadata = pageMeta({ ...seo.start, path: "/start" });
 
 export default function Start() {
   return (

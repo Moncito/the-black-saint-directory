@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { graph, breadcrumbs, servicesList } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import { services } from "@/content/services";
 import { TLink } from "@/components/Transition";
 import { PageHeader } from "@/components/ui";
 
-export const metadata: Metadata = pageMeta({ title: "Services", path: "/services" });
+export const metadata: Metadata = pageMeta({ ...seo.services, path: "/services" });
 
 export default function Services() {
   return (

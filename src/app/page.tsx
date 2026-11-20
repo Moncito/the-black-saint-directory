@@ -1,4 +1,7 @@
 import type { CSSProperties } from "react";
+import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import { hero, site } from "@/content/site";
 import { ManilaClock } from "@/components/ManilaClock";
 import { Manifesto } from "@/components/home/Manifesto";
@@ -6,6 +9,8 @@ import { WorkGallery } from "@/components/home/WorkGallery";
 import { ServicesHalo } from "@/components/home/ServicesHalo";
 import { ProcessLine } from "@/components/home/ProcessLine";
 import { Proof } from "@/components/home/Proof";
+
+export const metadata: Metadata = pageMeta({ absoluteTitle: seo.home.title, path: "/" });
 
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
 

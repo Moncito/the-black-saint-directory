@@ -15,6 +15,8 @@ export const siteUrl = (
 type PageMeta = {
   /** Short title; the layout template appends the studio name. */
   title?: string;
+  /** Full title used as-is (home page): no brand suffix is appended. */
+  absoluteTitle?: string;
   description?: string;
   /** Route path, e.g. "/work". */
   path: string;
@@ -24,8 +26,8 @@ type PageMeta = {
 };
 
 /** Every page's metadata, built the same way: canonical, Open Graph, Twitter. */
-export function pageMeta({ title, description, path, image, imageAlt }: PageMeta): Metadata {
-  const fullTitle = title ? `${title} — ${site.name}` : site.name;
+export function pageMeta({ title, absoluteTitle, description, path, image, imageAlt }: PageMeta): Metadata {
+  const fullTitle = absoluteTitle ?? (title ? `${title} — ${site.name}` : site.name);
   const desc = description ?? site.description;
   const images = [
     {
@@ -36,7 +38,7 @@ export function pageMeta({ title, description, path, image, imageAlt }: PageMeta
     },
   ];
   return {
-    ...(title ? { title } : {}),
+    ...(absoluteTitle ? { title: { absolute: absoluteTitle } } : title ? { title } : {}),
     description: desc,
     alternates: { canonical: path },
     openGraph: {

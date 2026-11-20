@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { graph, breadcrumbs } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
+import { seo } from "@/content/seo";
 import { stations } from "@/content/process";
 import { PageHeader } from "@/components/ui";
 
-export const metadata: Metadata = pageMeta({ title: "Process", path: "/process" });
+export const metadata: Metadata = pageMeta({ ...seo.process, path: "/process" });
 
 /** Phase 1 skeleton. Timelines, deliverables and the weaving line come later. */
 export default function Process() {
