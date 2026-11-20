@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs, servicesList } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
 import { services } from "@/content/services";
 import { TLink } from "@/components/Transition";
@@ -9,6 +11,7 @@ export const metadata: Metadata = pageMeta({ title: "Services", path: "/services
 export default function Services() {
   return (
     <>
+      <JsonLd data={graph(breadcrumbs([{ name: "Services", path: "/services" }]), servicesList())} />
       <PageHeader
         label={`Services — ${String(services.length).padStart(2, "0")}`}
         title="Services"

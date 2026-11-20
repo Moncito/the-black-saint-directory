@@ -9,7 +9,8 @@ import { FooterLift } from "@/components/FooterLift";
 import { Intro } from "@/components/Intro";
 import { SceneRoot } from "@/scene/SceneRoot";
 import { pageMeta, siteUrl } from "@/lib/seo";
-import { saints } from "@/content/team";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, siteGraph } from "@/lib/schema";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -53,25 +54,6 @@ export const metadata: Metadata = {
     ],
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
-};
-
-/** Structured data for search: who the studio is, where, and who runs it. */
-const organization = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: site.name,
-  url: siteUrl,
-  logo: `${siteUrl}/brand/logos/png/bsd-primary-ink.png`,
-  description: site.description,
-  slogan: "Every person is a saint of their own life.",
-  foundingDate: "2026",
-  address: { "@type": "PostalAddress", addressLocality: "Manila", addressCountry: "PH" },
-  founder: saints.map((s) => ({
-    "@type": "Person",
-    name: s.name,
-    jobTitle: s.role,
-    sameAs: s.links.map((l) => l.href),
-  })),
 };
 
 export const viewport: Viewport = {
@@ -118,11 +100,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div aria-hidden="true" className="grain" />
         {/* Cookieless, privacy-friendly. Collects only once enabled in the Vercel project. */}
         <Analytics />
-        <script
-          type="application/ld+json"
-          // Built only from our own content files, never from visitor input.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
-        />
+        <JsonLd data={graph(siteGraph())} />
       </body>
     </html>
   );

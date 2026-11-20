@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs, people } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
 import { saints } from "@/content/team";
 import { values } from "@/content/site";
@@ -10,6 +12,7 @@ export const metadata: Metadata = pageMeta({ title: "Studio", path: "/studio" })
 export default function Studio() {
   return (
     <>
+      <JsonLd data={graph(breadcrumbs([{ name: "Studio", path: "/studio" }]), people())} />
       <PageHeader label="Studio" title="The Saints" />
 
       <section className="gutter pb-[16vh]">

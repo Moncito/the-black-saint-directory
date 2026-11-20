@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs, serviceNode, packagesFor } from "@/lib/schema";
+import { formatRange, rules } from "@/content/pricing";
+import { cta, startHref } from "@/content/site";
 import { pageMeta } from "@/lib/seo";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
@@ -42,6 +46,15 @@ export default async function ServicePage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={graph(
+          breadcrumbs([
+            { name: "Services", path: "/services" },
+            { name: service.name, path: `/services/${service.slug}` },
+          ]),
+          serviceNode(service),
+        )}
+      />
       <PageHeader label={`Services — ${service.index}`} title={service.name} />
       <section className="gutter grid gap-10 pb-[12vh] md:grid-cols-[1fr_2fr]">
         <p data-reveal="fade" className="t-label">
@@ -57,6 +70,36 @@ export default async function ServicePage({ params }: Props) {
           <SectionHead index={service.index} label="Live demo" />
         </div>
         <div className={service.slug === "mobile" ? "" : "gutter"}>{demos[service.slug]}</div>
+      </section>
+
+      {/* Straight from the price book: what each package includes, costs and takes. */}
+      <section className="gutter pb-[14vh]" aria-label="Packages">
+        <SectionHead index={String(packagesFor(service.slug).length).padStart(2, "0")} label="Packages" />
+        <ul>
+          {packagesFor(service.slug).map((pkg) => (
+            <li
+              key={pkg.id}
+              data-reveal="fade"
+              className="grid gap-3 border-b border-graphite py-8 md:grid-cols-[1.2fr_1.4fr_auto] md:items-baseline md:gap-10"
+            >
+              <h3 className="t-h3">{pkg.name}</h3>
+              <p className="t-body max-w-[48ch] text-fog">{pkg.scope}</p>
+              <p className="t-label md:text-right">
+                <span className="block tabular-nums">{formatRange(pkg.php)}</span>
+                <span className="mt-2 block text-fog">{pkg.timeline}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <TLink
+            href={startHref}
+            className="t-label inline-flex h-14 items-center gap-3 rounded-full bg-white px-8 text-ink transition-colors duration-700 ease-[var(--ease-expo)] hover:bg-bone"
+          >
+            {cta.action} <span aria-hidden="true">→</span>
+          </TLink>
+          <p className="t-label text-fog">{rules.note}</p>
+        </div>
       </section>
 
       <section className="gutter pb-[14vh]">

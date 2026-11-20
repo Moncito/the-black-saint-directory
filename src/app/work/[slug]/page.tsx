@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs, workNode } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -34,6 +36,15 @@ export default async function CaseStudy({ params }: Props) {
 
   return (
     <CaseStudyShell>
+      <JsonLd
+        data={graph(
+          breadcrumbs([
+            { name: "Work", path: "/work" },
+            { name: project.name, path: `/work/${project.slug}` },
+          ]),
+          workNode(project),
+        )}
+      />
       <header className="gutter pb-12 pt-[calc(var(--spacing-nav)+12vh)] md:pb-16">
         <Label>
           {project.index} — {project.meta}

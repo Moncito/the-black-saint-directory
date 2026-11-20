@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
 import { carePlans, formatPhp, rules } from "@/content/pricing";
 import { cta, site } from "@/content/site";
@@ -14,6 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Start() {
   return (
     <>
+      <JsonLd data={graph(breadcrumbs([{ name: cta.action, path: "/start" }]))} />
       <PageHeader label="Start" title={cta.action}>
         <p className="t-body mt-8 max-w-[44ch] text-fog">{rules.note}</p>
       </PageHeader>

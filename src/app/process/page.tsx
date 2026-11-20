@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { graph, breadcrumbs } from "@/lib/schema";
 import { pageMeta } from "@/lib/seo";
 import { stations } from "@/content/process";
 import { PageHeader } from "@/components/ui";
@@ -9,6 +11,7 @@ export const metadata: Metadata = pageMeta({ title: "Process", path: "/process" 
 export default function Process() {
   return (
     <>
+      <JsonLd data={graph(breadcrumbs([{ name: "Process", path: "/process" }]))} />
       <PageHeader
         label={`Process — ${String(stations.length).padStart(2, "0")}`}
         title="Process"
