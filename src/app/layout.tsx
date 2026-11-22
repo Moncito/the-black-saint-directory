@@ -66,8 +66,11 @@ export const viewport: Viewport = {
  * the intro (once per session; ?intro=0 skips it), and enables motion styling
  * only when reduced motion is not requested. Both have failsafes: if the app
  * never boots, everything is un-hidden, so content is never held hostage by JS.
+ *
+ * Search and link-preview crawlers never press Enter, so they skip the intro
+ * and see the page itself — the same content every visitor reaches after it.
  */
-const bootScript = `(function(){var d=document.documentElement,c=d.classList,q=location.search,seen=false;try{seen=!!sessionStorage.getItem('bsd-intro')}catch(e){}if(/[?&]intro=0/.test(q))seen=true;if(/[?&](intro=1|capture)/.test(q))seen=false;if(!seen){c.add('intro-pending');setTimeout(function(){if(!window.__bsdIntro)c.remove('intro-pending')},6000)}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){c.add('motion-ok');setTimeout(function(){if(!c.contains('motion-ready')&&!c.contains('intro-pending'))c.remove('motion-ok')},5000)}})()`;
+const bootScript = `(function(){var d=document.documentElement,c=d.classList,q=location.search,seen=false;try{seen=!!sessionStorage.getItem('bsd-intro')}catch(e){}if(/[?&]intro=0/.test(q))seen=true;if(/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview/i.test(navigator.userAgent))seen=true;if(/[?&](intro=1|capture)/.test(q))seen=false;if(!seen){c.add('intro-pending');setTimeout(function(){if(!window.__bsdIntro)c.remove('intro-pending')},6000)}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){c.add('motion-ok');setTimeout(function(){if(!c.contains('motion-ready')&&!c.contains('intro-pending'))c.remove('motion-ok')},5000)}})()`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
